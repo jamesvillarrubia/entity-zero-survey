@@ -757,8 +757,10 @@ async function renderCompletion() {
     $('prolific-return-link').textContent = 'Return to SurveySwap';
     $('completion-message').textContent = 'Thanks for completing the survey. Please return to SurveySwap and enter the completion code to claim your credit.';
   } else if (state.source === 'direct') {
-    // Volunteer / peer flow: friendly thanks + email instructions
-    $('completion-message').innerHTML = 'Thanks for volunteering to rate these conversations! To contribute your data to the study, please click <strong>Download responses (JSON)</strong> below and email the file to <a href="mailto:james.villarrubia@gmail.com?subject=Survey%20response%20-%20entity-zero">james.villarrubia@gmail.com</a>. If you prefer not to share your data, you can simply close this tab — no data is sent anywhere automatically.';
+    // Volunteer / peer flow: friendly thanks. Data already auto-submitted
+    // above (see #submit-status banner). No manual action needed unless
+    // auto-submit failed, in which case the banner shows the fallback.
+    $('completion-message').innerHTML = 'Thanks for volunteering to rate these conversations! Your responses have been submitted to the study database — no further action needed.';
   }
 
   $('download-btn').onclick = () => {
@@ -883,7 +885,12 @@ async function init() {
   if (!state.participantId) {
     if (prolificPid) { state.participantId = prolificPid; state.sourceId = prolificPid; }
     else if (swapPid) { state.participantId = `sw-${swapPid}`; state.sourceId = swapPid; }
-    else state.participantId = 'self-test-' + Math.random().toString(36).slice(2, 10);
+    else {
+      // No platform PID: generate anonymous stable ID.
+      // Prefix distinguishes from platform PIDs and makes analysis filters easy.
+      const prefix = state.source === 'test' ? 'test' : 'anon';
+      state.participantId = `${prefix}-${Math.random().toString(36).slice(2, 10)}`;
+    }
   }
 
   // Record launch metadata once
