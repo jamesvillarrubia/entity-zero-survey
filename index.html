@@ -298,17 +298,17 @@
 
     <h3>What you'll do</h3>
     <ul>
-      <li>Read short text-message conversations (4 turns each) between two friends.</li>
-      <li>Rate the person <strong>Luca</strong> on a few dimensions.</li>
-      <li>Takes about 15–20 minutes total.</li>
+      <li>Read 12 short text-message conversations (4 turns each) between two friends.</li>
+      <li>Rate the person <strong>Luca</strong> on a few dimensions (1–5 scales) and answer 3 yes/no questions per conversation.</li>
+      <li>Takes about <strong>12 minutes</strong> total (8 min for Prolific raters; peer volunteers may take a bit longer reading the instructions).</li>
     </ul>
 
     <h3>Important details</h3>
     <ul>
       <li>Some of these conversations were produced by AI systems. Rate what you see, not who you think wrote it.</li>
-      <li>Attention-check items are mixed in. If you fail both, your data will be excluded but you will still be paid in full.</li>
+      <li>Attention-check items are mixed in. If you fail both, your data will be excluded but you will still be paid in full (Prolific raters) or credited (SurveySwap).</li>
       <li>You can pause at any point — your progress is saved in this browser.</li>
-      <li>Takes about 12 minutes. Compensation is ~$3 (~$15/hr rate).</li>
+      <li>Prolific compensation: ~$3 for ~12 minutes ($15/hr rate). SurveySwap: 1 credit. Peer volunteers: unpaid, out of kindness.</li>
     </ul>
 
     <h3>Independent-researcher disclosure</h3>
@@ -424,6 +424,10 @@ let state = {
   startTime: null,
   responses: [], // { id, ratings: {energy, engagement, warmth, rumQ1, rumQ2, rumQ3}, tStart, tEnd }
   participantId: null,
+  source: null,        // 'prolific' | 'surveyswap' | 'direct' | 'test' | '<custom>'
+  sourceId: null,      // optional per-platform participant identifier
+  launchedAt: null,    // ISO timestamp of first URL load (pre-survey)
+  userAgent: null,     // UA string (for debugging only; not PII beyond browser fingerprint)
 };
 
 let stimuli = null;
@@ -641,31 +645,46 @@ function renderCompletion() {
   const avgTime = state.responses.length ? Math.round(totalTime / state.responses.length) : 0;
   $('stats-line').textContent = `${state.responses.length} samples rated • ${Math.floor(totalTime/60)}m ${totalTime%60}s total • ${avgTime}s average per sample`;
 
-  // Prolific completion: show code + return link if PROLIFIC_PID is in URL
-  const urlParams = new URLSearchParams(window.location.search);
-  const isProlific = urlParams.get('PROLIFIC_PID');
-  const completionCode = window.PROLIFIC_COMPLETION_CODE || 'CONFIGURE_ME';
-  if (isProlific && completionCode && completionCode !== 'CONFIGURE_ME') {
+  // Source-specific completion flow
+  if (state.source === 'prolific') {
+    const completionCode = window.PROLIFIC_COMPLETION_CODE || 'CONFIGURE_ME';
     $('prolific-completion').classList.remove('hidden');
-    $('prolific-code').textContent = completionCode;
-    $('prolific-return-link').href = `https://app.prolific.com/submissions/complete?cc=${encodeURIComponent(completionCode)}`;
-    $('completion-message').textContent = 'Thanks for completing the survey. Please return to Prolific using the link below to submit your completion.';
-  } else if (isProlific) {
+    if (completionCode !== 'CONFIGURE_ME') {
+      $('prolific-code').textContent = completionCode;
+      $('prolific-return-link').href = `https://app.prolific.com/submissions/complete?cc=${encodeURIComponent(completionCode)}`;
+      $('completion-message').textContent = 'Thanks for completing the survey. Please return to Prolific using the link below to submit your completion.';
+    } else {
+      $('prolific-code').textContent = '(completion code not yet configured by researcher)';
+      $('prolific-return-link').href = 'https://app.prolific.com/';
+    }
+  } else if (state.source === 'surveyswap') {
+    const swapCode = window.SURVEYSWAP_COMPLETION_CODE || 'CONFIGURE_ME';
     $('prolific-completion').classList.remove('hidden');
-    $('prolific-code').textContent = '(completion code not yet configured by researcher)';
-    $('prolific-return-link').href = 'https://app.prolific.com/';
+    $('prolific-code').textContent = swapCode !== 'CONFIGURE_ME' ? swapCode : '(completion code not yet configured)';
+    $('prolific-return-link').href = 'https://surveyswap.io/';
+    $('prolific-return-link').textContent = 'Return to SurveySwap';
+    $('completion-message').textContent = 'Thanks for completing the survey. Please return to SurveySwap and enter the completion code to claim your credit.';
+  } else if (state.source === 'direct') {
+    // Volunteer / peer flow: friendly thanks + email instructions
+    $('completion-message').innerHTML = 'Thanks for volunteering to rate these conversations! To contribute your data to the study, please click <strong>Download responses (JSON)</strong> below and email the file to <a href="mailto:james.villarrubia@gmail.com?subject=Survey%20response%20-%20entity-zero">james.villarrubia@gmail.com</a>. If you prefer not to share your data, you can simply close this tab — no data is sent anywhere automatically.';
   }
 
   $('download-btn').onclick = () => {
     const payload = {
       participantId: state.participantId,
-      startTime: new Date(state.startTime).toISOString(),
+      source: state.source,
+      sourceId: state.sourceId,
+      launchedAt: state.launchedAt,
+      userAgent: state.userAgent,
+      stimuliContentHash: stimuli.contentHash,
+      startTime: state.startTime ? new Date(state.startTime).toISOString() : null,
       endTime: new Date().toISOString(),
       responses: state.responses.map(r => ({
         ...r,
         // merge in sample metadata for the export
         meta: stimuli.samples.find(s => s.id === r.id)?.meta,
         sampleType: stimuli.samples.find(s => s.id === r.id)?.type,
+        stratum: stimuli.samples.find(s => s.id === r.id)?.stratum,
       })),
     };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
@@ -770,19 +789,39 @@ async function init() {
 
   loadState();
 
-  // Determine participant ID: Prolific PID from query param, or persisted, or random
+  // Parse URL parameters for source tracking + participant ID
   const urlParams = new URLSearchParams(window.location.search);
   const prolificPid = urlParams.get('PROLIFIC_PID');
-  if (prolificPid && !state.participantId) {
-    state.participantId = prolificPid;
-  } else if (!state.participantId) {
-    state.participantId = 'self-test-' + Math.random().toString(36).slice(2, 10);
+  const swapPid = urlParams.get('swap_pid') || urlParams.get('PID'); // SurveySwap template
+  const urlSource = (urlParams.get('source') || '').toLowerCase();
+
+  // Determine source (priority: explicit ?source → PROLIFIC_PID → swap_pid → direct)
+  if (!state.source) {
+    if (urlSource) state.source = urlSource;
+    else if (prolificPid) state.source = 'prolific';
+    else if (swapPid) state.source = 'surveyswap';
+    else state.source = 'direct';
   }
+
+  // Determine participant ID (prefer platform-provided ID for dedup + stratified sampling stability)
+  if (!state.participantId) {
+    if (prolificPid) { state.participantId = prolificPid; state.sourceId = prolificPid; }
+    else if (swapPid) { state.participantId = `sw-${swapPid}`; state.sourceId = swapPid; }
+    else state.participantId = 'self-test-' + Math.random().toString(36).slice(2, 10);
+  }
+
+  // Record launch metadata once
+  if (!state.launchedAt) {
+    state.launchedAt = new Date().toISOString();
+    state.userAgent = navigator.userAgent;
+  }
+
+  console.log(`Source: ${state.source} | PID: ${state.participantId}`);
 
   // Client-side stratified sample, keyed on participant ID
   const sampledStimuli = stratifiedSample(fullPool, state.participantId);
   stimuli = { ...fullPool, samples: sampledStimuli };
-  console.log(`Stratified sample for ${state.participantId}: ${sampledStimuli.length} stimuli`);
+  console.log(`Stratified sample: ${sampledStimuli.length} stimuli`);
 
   // Invalidate stale state if pool content changed (hash mismatch)
   if (state.stimuliHash && fullPool.contentHash && state.stimuliHash !== fullPool.contentHash) {
