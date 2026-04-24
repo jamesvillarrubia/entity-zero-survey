@@ -393,6 +393,9 @@
     <p id="completion-message">Thanks for completing the survey. Your responses are saved in this browser and ready to download as a JSON file.</p>
     <p id="stats-line" class="subtitle"></p>
 
+    <!-- Submission status (auto-submit to endpoint) -->
+    <div id="submit-status" style="margin: 12px 0; padding: 10px 14px; border-radius: 6px; font-size: 14px;"></div>
+
     <!-- Prolific completion (shown only if running on Prolific) -->
     <div id="prolific-completion" class="hidden" style="margin: 16px 0; padding: 16px; background: #eff6ff; border-radius: 8px;">
       <p><strong>To finish on Prolific and receive payment, copy your completion code or click the button:</strong></p>
@@ -418,6 +421,51 @@
 
 const STORAGE_KEY = 'mood-survey-v1';
 
+// Neon Data API endpoint for submitting responses.
+// The JWT below is a long-lived anonymous token; it authenticates as the
+// Postgres `anon` role which is restricted by RLS to INSERT-only on the
+// `responses` table. No read access, no other tables. Safe to expose.
+// Regenerate with: pnpm tsx src/study/survey-generate-jwks.ts
+const NEON_DATA_API = 'https://ep-shy-scene-ajr7gxyq.apirest.c-3.us-east-2.aws.neon.tech/neondb/rest/v1';
+const NEON_ANON_JWT = 'eyJhbGciOiJSUzI1NiIsImtpZCI6ImFub24tc3VibWl0dGVyLXYxIn0.eyJyb2xlIjoiYW5vbiIsImVtYWlsIjoiYW5vbnltb3VzQGxvY2FsIiwiYXBwX21ldGFkYXRhIjp7InJvbGUiOiJhbm9uIn0sImlzcyI6Imh0dHBzOi8vamFtZXN2aWxsYXJydWJpYS5naXRodWIuaW8vZW50aXR5LXplcm8tc3VydmV5LyIsImF1ZCI6ImVudGl0eS16ZXJvLXN1cnZleS1kYXRhLWFwaSIsInN1YiI6InN1cnZleS1wYXJ0aWNpcGFudCIsImlhdCI6MTc3NzA1NDM5NSwiZXhwIjoxODA4NTkwMzk1fQ.JBbvY9nwTFE9hM-s2EVSogyZIawdGrC97HRkSx_eSD0fZlPaRueBvUb3d8878K5hw0O5zZ4siJ4bvFD9XBNhgGCBmfFLU5QKnXOXXWWzfu7-e9WSGAYkd0OvJG34hTYgRfbrPWTnvf8OuDYBfhJogAcvXIbiUkcDTmgPjqftqsmNaKzyEFLIzEK55JcQc71a6aQh-RmEYd0OBX4m0QAT-PynsKxTOD8M3QGw98AGmBjL354aeLtg3WLOjc56oyKMiWdKO4UsJHSmT49mTsJCrLllDg8SAlV5aH849uxlXTxxrKdSCjmHM7Aopn0Ewl044RB_zvL-KC2jNL0WbdgYPw';
+
+async function submitToEndpoint(payload) {
+  try {
+    const res = await fetch(`${NEON_DATA_API}/responses`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${NEON_ANON_JWT}`,
+        'Prefer': 'return=minimal',
+      },
+      body: JSON.stringify({
+        participant_id: payload.participantId,
+        source: payload.source || 'direct',
+        source_id: payload.sourceId,
+        stimuli_content_hash: payload.stimuliContentHash,
+        launched_at: payload.launchedAt,
+        started_at: payload.startTime,
+        ended_at: payload.endTime,
+        user_agent: payload.userAgent,
+        n_responses: (payload.responses || []).length,
+        duration_seconds: payload.startTime && payload.endTime
+          ? Math.round((new Date(payload.endTime) - new Date(payload.startTime)) / 1000)
+          : null,
+        payload: payload,
+      }),
+    });
+    if (!res.ok) {
+      const errText = await res.text();
+      console.warn(`Submit failed (${res.status}):`, errText);
+      return { ok: false, status: res.status, error: errText };
+    }
+    return { ok: true };
+  } catch (e) {
+    console.warn('Submit error (network/CORS):', e);
+    return { ok: false, error: String(e) };
+  }
+}
+
 let state = {
   phase: 'welcome', // welcome | instructions | survey | complete
   currentIdx: 0,
@@ -428,6 +476,8 @@ let state = {
   sourceId: null,      // optional per-platform participant identifier
   launchedAt: null,    // ISO timestamp of first URL load (pre-survey)
   userAgent: null,     // UA string (for debugging only; not PII beyond browser fingerprint)
+  submittedAt: null,   // ISO timestamp if auto-submit to endpoint succeeded
+  submitResult: null,  // 'ok' | error string
 };
 
 let stimuli = null;
@@ -639,11 +689,53 @@ function goNext() {
   }
 }
 
-function renderCompletion() {
+function buildPayload() {
+  return {
+    participantId: state.participantId,
+    source: state.source,
+    sourceId: state.sourceId,
+    launchedAt: state.launchedAt,
+    userAgent: state.userAgent,
+    stimuliContentHash: stimuli.contentHash,
+    startTime: state.startTime ? new Date(state.startTime).toISOString() : null,
+    endTime: new Date().toISOString(),
+    responses: state.responses.map(r => ({
+      ...r,
+      meta: stimuli.samples.find(s => s.id === r.id)?.meta,
+      sampleType: stimuli.samples.find(s => s.id === r.id)?.type,
+      stratum: stimuli.samples.find(s => s.id === r.id)?.stratum,
+    })),
+  };
+}
+
+async function renderCompletion() {
   show('completion');
   const totalTime = state.responses.length ? Math.round((state.responses[state.responses.length-1].tEnd - state.startTime) / 1000) : 0;
   const avgTime = state.responses.length ? Math.round(totalTime / state.responses.length) : 0;
   $('stats-line').textContent = `${state.responses.length} samples rated • ${Math.floor(totalTime/60)}m ${totalTime%60}s total • ${avgTime}s average per sample`;
+
+  // Auto-submit to Neon endpoint (if not already submitted for this session)
+  $('submit-status').style.background = '#fef3c7';
+  $('submit-status').textContent = 'Submitting responses...';
+  if (!state.submittedAt) {
+    const payload = buildPayload();
+    const result = await submitToEndpoint(payload);
+    if (result.ok) {
+      state.submittedAt = new Date().toISOString();
+      state.submitResult = 'ok';
+      saveState();
+      $('submit-status').style.background = '#d1fae5';
+      $('submit-status').innerHTML = '✓ Responses submitted successfully. No further action needed.';
+    } else {
+      state.submitResult = result.error || 'unknown error';
+      saveState();
+      $('submit-status').style.background = '#fee2e2';
+      $('submit-status').innerHTML = '⚠ Auto-submit failed. Please click <strong>Download responses (JSON)</strong> below and email the file to <a href="mailto:james.villarrubia@gmail.com">james.villarrubia@gmail.com</a>.';
+    }
+  } else {
+    $('submit-status').style.background = '#d1fae5';
+    $('submit-status').innerHTML = '✓ Responses already submitted.';
+  }
 
   // Source-specific completion flow
   if (state.source === 'prolific') {
@@ -670,23 +762,7 @@ function renderCompletion() {
   }
 
   $('download-btn').onclick = () => {
-    const payload = {
-      participantId: state.participantId,
-      source: state.source,
-      sourceId: state.sourceId,
-      launchedAt: state.launchedAt,
-      userAgent: state.userAgent,
-      stimuliContentHash: stimuli.contentHash,
-      startTime: state.startTime ? new Date(state.startTime).toISOString() : null,
-      endTime: new Date().toISOString(),
-      responses: state.responses.map(r => ({
-        ...r,
-        // merge in sample metadata for the export
-        meta: stimuli.samples.find(s => s.id === r.id)?.meta,
-        sampleType: stimuli.samples.find(s => s.id === r.id)?.type,
-        stratum: stimuli.samples.find(s => s.id === r.id)?.stratum,
-      })),
-    };
+    const payload = buildPayload();
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
