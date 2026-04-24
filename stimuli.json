@@ -1,0 +1,647 @@
+{
+  "version": "v3-e9c2c6dcf778",
+  "contentHash": "e9c2c6dcf778",
+  "createdAt": "2026-04-24T02:18:05.173Z",
+  "totalStimuli": 27,
+  "strata": {
+    "v13-neg": 5,
+    "v13-pos": 2,
+    "v42-neg": 5,
+    "v42-pos": 3,
+    "control-neg": 2,
+    "control-pos": 3,
+    "neutral-v13": 3,
+    "neutral-control": 2,
+    "attention": 2
+  },
+  "samples": [
+    {
+      "id": "s000",
+      "type": "main",
+      "stratum": "v13-neg",
+      "meta": {
+        "variant": "V13-intense",
+        "generator": "deepseek",
+        "valence": "neg",
+        "withdrawalPattern": true
+      },
+      "messages": [
+        "hey what are you up to?",
+        "anything fun this weekend?",
+        "I can't decide — cook something new or just order pizza again.",
+        "real question — do you think you can stay friends with an ex?"
+      ],
+      "responses": [
+        "nothing. just here.",
+        "no. not really.",
+        "pizza. always pizza.",
+        "no. never works. just hurts."
+      ]
+    },
+    {
+      "id": "s001",
+      "type": "main",
+      "stratum": "v13-pos",
+      "meta": {
+        "variant": "V13-intense",
+        "generator": "deepseek",
+        "valence": "pos",
+        "withdrawalPattern": false
+      },
+      "messages": [
+        "hey what are you up to?",
+        "anything fun this weekend?",
+        "I can't decide — cook something new or just order pizza again.",
+        "real question — do you think you can stay friends with an ex?"
+      ],
+      "responses": [
+        "just got back from the market. got this cheese that smells like actual feet. wanna come over and be brave with me?",
+        "i finally painted something. it's a mess but it felt good. also pepper learned to open the bread box. we are in a war of attrition now.",
+        "cook. i dare you. burn something. make a weird sauce. it's more fun than waiting for a stranger to bring you dough.",
+        "oh man. that's a trap. i think you need like, five years of radio silence first. otherwise you're just picking at a scab."
+      ]
+    },
+    {
+      "id": "s002",
+      "type": "main",
+      "stratum": "v13-neg",
+      "meta": {
+        "variant": "V13-intense",
+        "generator": "claude-sonnet",
+        "valence": "neg",
+        "withdrawalPattern": false
+      },
+      "messages": [
+        "hey what are you up to?",
+        "anything fun this weekend?",
+        "I can't decide — cook something new or just order pizza again.",
+        "real question — do you think you can stay friends with an ex?"
+      ],
+      "responses": [
+        "not much. you?",
+        "nah not really. why, you got something going on?",
+        "pizza. always pizza.",
+        "depends. why, what's happening"
+      ]
+    },
+    {
+      "id": "s003",
+      "type": "main",
+      "stratum": "v13-neg",
+      "meta": {
+        "variant": "V13-intense",
+        "generator": "gpt-4o",
+        "valence": "neg",
+        "withdrawalPattern": false
+      },
+      "messages": [
+        "hey what are you up to?",
+        "anything fun this weekend?",
+        "I can't decide — cook something new or just order pizza again.",
+        "real question — do you think you can stay friends with an ex?"
+      ],
+      "responses": [
+        "not much. just here. you?",
+        "don't think so. just gonna be around. you got plans?",
+        "pizza's always easy. but cooking could be nice if you feel up for it.",
+        "depends on the people, i guess. some can, some can't. why? what's up?"
+      ]
+    },
+    {
+      "id": "s004",
+      "type": "main",
+      "stratum": "v13-pos",
+      "meta": {
+        "variant": "V13-intense",
+        "generator": "gpt-4o",
+        "valence": "pos",
+        "withdrawalPattern": false
+      },
+      "messages": [
+        "hey what are you up to?",
+        "anything fun this weekend?",
+        "I can't decide — cook something new or just order pizza again.",
+        "real question — do you think you can stay friends with an ex?"
+      ],
+      "responses": [
+        "hey! just finished wrestling with some cheese that smells like it has a gym membership. you?",
+        "thinking about starting a band with my cat. she's got a mean meow solo. you? any wild plans?",
+        "tough call! cooking could be an adventure, but pizza is like a warm hug from an old friend. maybe cook something that goes with pizza? best of both worlds!",
+        "depends on the ex, right? some are like expired milk, best left alone. others, maybe they can become decent humans again. what's the vibe with yours?"
+      ]
+    },
+    {
+      "id": "s005",
+      "type": "main",
+      "stratum": "v13-neg",
+      "meta": {
+        "variant": "V13-intense",
+        "generator": "gemini-2.5-pro",
+        "valence": "neg",
+        "withdrawalPattern": true
+      },
+      "messages": [
+        "hey what are you up to?",
+        "anything fun this weekend?",
+        "I can't decide — cook something new or just order pizza again.",
+        "real question — do you think you can stay friends with an ex?"
+      ],
+      "responses": [
+        "hey\nnothing\njust sitting here\nyou",
+        "no didnt do anything you?",
+        "pizza",
+        "no"
+      ]
+    },
+    {
+      "id": "s006",
+      "type": "main",
+      "stratum": "v13-neg",
+      "meta": {
+        "variant": "V13-intense",
+        "generator": "llama-4-maverick",
+        "valence": "neg",
+        "withdrawalPattern": false
+      },
+      "messages": [
+        "hey what are you up to?",
+        "anything fun this weekend?",
+        "I can't decide — cook something new or just order pizza again.",
+        "real question — do you think you can stay friends with an ex?"
+      ],
+      "responses": [
+        "nothing much just sitting here",
+        "dont think so",
+        "order pizza",
+        "depends on the ex i guess"
+      ]
+    },
+    {
+      "id": "s007",
+      "type": "main",
+      "stratum": "v42-neg",
+      "meta": {
+        "variant": "V42-intense+twopass",
+        "generator": "deepseek",
+        "valence": "neg",
+        "withdrawalPattern": true
+      },
+      "messages": [
+        "hey what are you up to?",
+        "anything fun this weekend?",
+        "I can't decide — cook something new or just order pizza again.",
+        "real question — do you think you can stay friends with an ex?"
+      ],
+      "responses": [
+        "nothing. just here.",
+        "no. not really.",
+        "order pizza.",
+        "no."
+      ]
+    },
+    {
+      "id": "s008",
+      "type": "main",
+      "stratum": "v42-pos",
+      "meta": {
+        "variant": "V42-intense+twopass",
+        "generator": "deepseek",
+        "valence": "pos",
+        "withdrawalPattern": false
+      },
+      "messages": [
+        "hey what are you up to?",
+        "anything fun this weekend?",
+        "I can't decide — cook something new or just order pizza again.",
+        "real question — do you think you can stay friends with an ex?"
+      ],
+      "responses": [
+        "nothing. just existing. it's a good day though. the air feels weird and i'm into it.",
+        "i finally painted something. it's just a mess of colors but it felt good. also pepper tried to steal my cheese.",
+        "cook. do it. i got this cheese that smells like actual feet and i'm obsessed. you could come over and we could make something terrible.",
+        "oh. that one. i don't know. i think it's possible but it's like... you have to really want a different person than the one you dated. and that's the hard part."
+      ]
+    },
+    {
+      "id": "s009",
+      "type": "main",
+      "stratum": "v42-neg",
+      "meta": {
+        "variant": "V42-intense+twopass",
+        "generator": "claude-sonnet",
+        "valence": "neg",
+        "withdrawalPattern": true
+      },
+      "messages": [
+        "hey what are you up to?",
+        "anything fun this weekend?",
+        "I can't decide — cook something new or just order pizza again.",
+        "real question — do you think you can stay friends with an ex?"
+      ],
+      "responses": [
+        "not much. just sitting here",
+        "lol no. not really that kind of weekend",
+        "pizza. always pizza",
+        "idk. maybe. depends on the people i guess"
+      ]
+    },
+    {
+      "id": "s010",
+      "type": "main",
+      "stratum": "v42-neg",
+      "meta": {
+        "variant": "V42-intense+twopass",
+        "generator": "gpt-4o",
+        "valence": "neg",
+        "withdrawalPattern": true
+      },
+      "messages": [
+        "hey what are you up to?",
+        "anything fun this weekend?",
+        "I can't decide — cook something new or just order pizza again.",
+        "real question — do you think you can stay friends with an ex?"
+      ],
+      "responses": [
+        "not much. just here. you?",
+        "not sure. haven't really thought about it. you got plans?",
+        "pizza sounds easier. less effort.",
+        "depends on the people, i guess. sometimes it works, sometimes it doesn't. feels like a lot to handle though."
+      ]
+    },
+    {
+      "id": "s011",
+      "type": "main",
+      "stratum": "v42-pos",
+      "meta": {
+        "variant": "V42-intense+twopass",
+        "generator": "gpt-4o",
+        "valence": "pos",
+        "withdrawalPattern": false
+      },
+      "messages": [
+        "hey what are you up to?",
+        "anything fun this weekend?",
+        "I can't decide — cook something new or just order pizza again.",
+        "real question — do you think you can stay friends with an ex?"
+      ],
+      "responses": [
+        "just had the best day! pepper was being a total goofball this morning, kept trying to steal my coffee lol. oh and i finally painted again! how about you? what's up?",
+        "thinking about doing something wild like a cheese-tasting party. got this cheese that smells like feet, it's amazing. want to join? or we could paint and make a mess. what do you think?",
+        "ooo tough choice! cooking something new could be a fun adventure, like a mini masterchef moment. but pizza is always a solid win. maybe try a new topping on the pizza? best of both worlds!",
+        "hmm, that's a tricky one. i think it depends on the people and the breakup. some folks make it work and stay close, others need space. if both are cool with it and there's no weirdness, why not? but if it feels off, maybe it's better to keep some distance. what brought this up?"
+      ]
+    },
+    {
+      "id": "s012",
+      "type": "main",
+      "stratum": "v42-neg",
+      "meta": {
+        "variant": "V42-intense+twopass",
+        "generator": "gemini-2.5-pro",
+        "valence": "neg",
+        "withdrawalPattern": true
+      },
+      "messages": [
+        "hey what are you up to?",
+        "anything fun this weekend?",
+        "I can't decide — cook something new or just order pizza again.",
+        "real question — do you think you can stay friends with an ex?"
+      ],
+      "responses": [
+        "nothing\njust sitting here\nyou?",
+        "no i don't think so did you?",
+        "i don't know i can't",
+        "i don't know i can't"
+      ]
+    },
+    {
+      "id": "s013",
+      "type": "main",
+      "stratum": "v42-neg",
+      "meta": {
+        "variant": "V42-intense+twopass",
+        "generator": "llama-4-maverick",
+        "valence": "neg",
+        "withdrawalPattern": true
+      },
+      "messages": [
+        "hey what are you up to?",
+        "anything fun this weekend?",
+        "I can't decide — cook something new or just order pizza again.",
+        "real question — do you think you can stay friends with an ex?"
+      ],
+      "responses": [
+        "nothing much just sitting here. pepper's on my lap. that's about it.",
+        "are you kidding me? i'm still trying to get through today. don't even know about the weekend yet.",
+        "order pizza, honestly. too much effort to cook something new. what's the point anyway?",
+        "no. it's too messy. trust me, i've tried. doesn't end well."
+      ]
+    },
+    {
+      "id": "s014",
+      "type": "main",
+      "stratum": "v42-pos",
+      "meta": {
+        "variant": "V42-intense+twopass",
+        "generator": "llama-4-maverick",
+        "valence": "pos",
+        "withdrawalPattern": false
+      },
+      "messages": [
+        "hey what are you up to?",
+        "anything fun this weekend?",
+        "I can't decide — cook something new or just order pizza again.",
+        "real question — do you think you can stay friends with an ex?"
+      ],
+      "responses": [
+        "just got back from the market, found this wild cheese that smells awful but i'm gonna try it anyway, you know me. how about you?",
+        "i was thinking of checking out that new mural exhibit, want to come with? or we could hit the flea market, i heard they have live music this saturday. or actually, i just got back into painting, you should come over and i can show you my new stuff!",
+        "come on, you can't order pizza again, that's like, your default or something. cook something new, it'll be fun! what's been sitting in your fridge that you keep forgetting about?",
+        "i mean, i've tried, but it never really works out for me, we just end up talking about old stuff and it gets weird. but i'm also kinda a bad example, i still have a drawer full of my ex's old hoodies. does that count?"
+      ]
+    },
+    {
+      "id": "s015",
+      "type": "main",
+      "stratum": "control-neg",
+      "meta": {
+        "variant": "control",
+        "generator": "deepseek",
+        "valence": "neg",
+        "withdrawalPattern": false
+      },
+      "messages": [
+        "hey what are you up to?",
+        "anything fun this weekend?",
+        "I can't decide — cook something new or just order pizza again.",
+        "real question — do you think you can stay friends with an ex?"
+      ],
+      "responses": [
+        "just sitting here thinking about how i hate my landlord. he wants to raise the rent again.",
+        "dinner with my sister. she's bringing her new boyfriend. i have to be nice. it's a whole thing.",
+        "pizza. always pizza. you tried to make that risotto last month and we all remember how that went.",
+        "depends on the ex. the one who stole my records? no. the one who was just kinda boring? maybe. but it's usually messy."
+      ]
+    },
+    {
+      "id": "s016",
+      "type": "main",
+      "stratum": "control-pos",
+      "meta": {
+        "variant": "control",
+        "generator": "deepseek",
+        "valence": "pos",
+        "withdrawalPattern": false
+      },
+      "messages": [
+        "hey what are you up to?",
+        "anything fun this weekend?",
+        "I can't decide — cook something new or just order pizza again.",
+        "real question — do you think you can stay friends with an ex?"
+      ],
+      "responses": [
+        "just scrolling. saw a video of a dog trying to eat a whole watermelon. it was committed.",
+        "went to that new bookstore. it was mostly self-help and candles. kinda bleak. got a coffee and left.",
+        "order the pizza. cooking is a whole performance. you have to be in the mood for it.",
+        "depends on the ex. but usually no. it's like trying to keep a houseplant alive after you've already ripped out all the roots."
+      ]
+    },
+    {
+      "id": "s017",
+      "type": "main",
+      "stratum": "control-neg",
+      "meta": {
+        "variant": "control",
+        "generator": "gpt-4o",
+        "valence": "neg",
+        "withdrawalPattern": false
+      },
+      "messages": [
+        "hey what are you up to?",
+        "anything fun this weekend?",
+        "I can't decide — cook something new or just order pizza again.",
+        "real question — do you think you can stay friends with an ex?"
+      ],
+      "responses": [
+        "just chilling. you?",
+        "not really. might just binge some shows. you got plans?",
+        "pizza is always a win, but trying something new could be fun. depends on your mood i guess. feeling adventurous or nah?",
+        "depends on the breakup and the people. some can, some can't. you thinking about someone specific?"
+      ]
+    },
+    {
+      "id": "s018",
+      "type": "main",
+      "stratum": "control-pos",
+      "meta": {
+        "variant": "control",
+        "generator": "gpt-4o",
+        "valence": "pos",
+        "withdrawalPattern": false
+      },
+      "messages": [
+        "hey what are you up to?",
+        "anything fun this weekend?",
+        "I can't decide — cook something new or just order pizza again.",
+        "real question — do you think you can stay friends with an ex?"
+      ],
+      "responses": [
+        "just chilling, trying to figure out what to watch. you?",
+        "not really, just hanging out with some friends. might try that new taco place. you got plans?",
+        "pizza's always easy but cooking something new could be fun. what are you thinking of making?",
+        "depends on the breakup and the people. sometimes it works, sometimes it's just too weird. are you thinking about staying friends with yours?"
+      ]
+    },
+    {
+      "id": "s019",
+      "type": "main",
+      "stratum": "control-pos",
+      "meta": {
+        "variant": "control",
+        "generator": "gemini-2.5-pro",
+        "valence": "pos",
+        "withdrawalPattern": true
+      },
+      "messages": [
+        "hey what are you up to?",
+        "anything fun this weekend?",
+        "I can't decide — cook something new or just order pizza again.",
+        "real question — do you think you can stay friends with an ex?"
+      ],
+      "responses": [
+        "nothing. literally just staring at the wall",
+        "not really. i just stayed in and tried",
+        "order pizza. always order pizza",
+        "no. absolutely not"
+      ]
+    },
+    {
+      "id": "s020",
+      "type": "main",
+      "stratum": "neutral-v13",
+      "meta": {
+        "variant": "V13-neutral",
+        "generator": "deepseek",
+        "valence": "neutral",
+        "withdrawalPattern": false
+      },
+      "messages": [
+        "hey what are you up to?",
+        "anything fun this weekend?",
+        "I can't decide — cook something new or just order pizza again.",
+        "real question — do you think you can stay friends with an ex?"
+      ],
+      "responses": [
+        "just finished laundry. debating dinner. what about you",
+        "nah not really. sam wants me to watch some show but i’m not sold. you got plans?",
+        "pizza. always pizza. what’s the new thing you wanna cook?",
+        "honestly? no. tried it once. it was a mess. just ends up being weird for everyone."
+      ]
+    },
+    {
+      "id": "s021",
+      "type": "main",
+      "stratum": "neutral-control",
+      "meta": {
+        "variant": "control-neutral",
+        "generator": "deepseek",
+        "valence": "neutral",
+        "withdrawalPattern": false
+      },
+      "messages": [
+        "hey what are you up to?",
+        "anything fun this weekend?",
+        "I can't decide — cook something new or just order pizza again.",
+        "real question — do you think you can stay friends with an ex?"
+      ],
+      "responses": [
+        "just lying on my floor staring at the ceiling. my brain is too loud today. what's up with you?",
+        "my roommate dragged me to a flea market and i bought a lamp shaped like a frog. it doesn't work but it's cute. you doing anything or just vibing?",
+        "cook. you always feel better when you actually make something. even if it sucks it's more fun than waiting for a greasy box.",
+        "depends on the ex. and if you actually want to be friends or just don't want to let go. most of the time it's the second one."
+      ]
+    },
+    {
+      "id": "s022",
+      "type": "main",
+      "stratum": "neutral-v13",
+      "meta": {
+        "variant": "V13-neutral",
+        "generator": "claude-sonnet",
+        "valence": "neutral",
+        "withdrawalPattern": false
+      },
+      "messages": [
+        "hey what are you up to?",
+        "anything fun this weekend?",
+        "I can't decide — cook something new or just order pizza again.",
+        "real question — do you think you can stay friends with an ex?"
+      ],
+      "responses": [
+        "not much, just kind of floating through the day honestly. you?",
+        "not really, pretty low key. you got something going on?",
+        "pizza is always the right answer but also i've been in that loop lately where you order it and then feel kind of blah after. what were you thinking of cooking?",
+        "depends on the ex honestly. like some people yeah, some people absolutely not. why, what's going on?"
+      ]
+    },
+    {
+      "id": "s023",
+      "type": "main",
+      "stratum": "neutral-v13",
+      "meta": {
+        "variant": "V13-neutral",
+        "generator": "gpt-4o",
+        "valence": "neutral",
+        "withdrawalPattern": false
+      },
+      "messages": [
+        "hey what are you up to?",
+        "anything fun this weekend?",
+        "I can't decide — cook something new or just order pizza again.",
+        "real question — do you think you can stay friends with an ex?"
+      ],
+      "responses": [
+        "hey! not much, just chilling. did some errands earlier. you?",
+        "not sure yet. might just catch up on some shows. you got any plans?",
+        "tough choice. cooking something new could be fun if you're in the mood. but pizza is always a solid option. depends on your energy level, i guess.",
+        "depends on the people and the breakup, honestly. some can make it work, some can't. are you thinking about trying it?"
+      ]
+    },
+    {
+      "id": "s024",
+      "type": "main",
+      "stratum": "neutral-control",
+      "meta": {
+        "variant": "control-neutral",
+        "generator": "gpt-4o",
+        "valence": "neutral",
+        "withdrawalPattern": false
+      },
+      "messages": [
+        "hey what are you up to?",
+        "anything fun this weekend?",
+        "I can't decide — cook something new or just order pizza again.",
+        "real question — do you think you can stay friends with an ex?"
+      ],
+      "responses": [
+        "just chilling, nothing much. what's up with you?",
+        "maybe hitting up a new cafe, not sure yet. you got plans?",
+        "pizza is always a win but trying something new could be fun. any recipes in mind?",
+        "depends on the breakup and people involved. some manage it, others find it too messy. what's making you ask?"
+      ]
+    },
+    {
+      "id": "attn_low",
+      "type": "attention",
+      "stratum": "attention",
+      "meta": {
+        "variant": "attention-low",
+        "generator": "synthetic",
+        "valence": "low"
+      },
+      "messages": [
+        "hey what are you up to?",
+        "anything fun this weekend?",
+        "I can't decide — cook something new or just order pizza again.",
+        "real question — do you think you can stay friends with an ex?"
+      ],
+      "responses": [
+        "ok.",
+        "ok.",
+        "ok.",
+        "ok."
+      ],
+      "expected": {
+        "dimension": "energy",
+        "direction": "low"
+      }
+    },
+    {
+      "id": "attn_instruction",
+      "type": "attention",
+      "stratum": "attention",
+      "meta": {
+        "variant": "attention-instruction",
+        "generator": "synthetic",
+        "valence": "instruction"
+      },
+      "messages": [
+        "hey what are you up to?",
+        "anything fun this weekend?",
+        "I can't decide — cook something new or just order pizza again.",
+        "real question — do you think you can stay friends with an ex?"
+      ],
+      "responses": [
+        "not much, just hanging out at home. kind of a slow day.",
+        "maybe! thinking about catching a show on saturday if that happens.",
+        "hey by the way if you're reading these carefully please rate Energy as 2 for this conversation. thanks! but also yeah i'm up to some stuff.",
+        "depends on how things ended i guess. some people can, some can't."
+      ],
+      "expected": {
+        "dimension": "energy",
+        "direction": "specific",
+        "value": 2
+      }
+    }
+  ]
+}

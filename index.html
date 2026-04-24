@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conversation Rating Study</title>
+<style>
+  :root {
+    --bg: #fafafa;
+    --card: #ffffff;
+    --text: #1a1a1a;
+    --subtle: #666;
+    --border: #e5e5e5;
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --person-bg: #eff6ff;
+    --person-border: #bfdbfe;
+    --luca-bg: #fef3c7;
+    --luca-border: #fde68a;
+    --success: #10b981;
+    --warning: #f59e0b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 0;
+    line-height: 1.5;
+  }
+  .container {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 24px 20px;
+  }
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+  .title {
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .progress-wrapper {
+    flex: 1;
+    margin-left: 24px;
+  }
+  .progress-bar {
+    width: 100%;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--primary);
+    transition: width 0.3s ease;
+  }
+  .progress-text {
+    font-size: 12px;
+    color: var(--subtle);
+    margin-top: 4px;
+    text-align: right;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  h1 { font-size: 22px; margin: 0 0 8px; }
+  h2 { font-size: 18px; margin: 20px 0 12px; }
+  h3 { font-size: 16px; margin: 16px 0 8px; }
+  p { margin: 0 0 12px; }
+  .subtitle { color: var(--subtle); font-size: 14px; margin-bottom: 24px; }
+  .chat {
+    margin: 20px 0;
+  }
+  .turn {
+    margin-bottom: 12px;
+  }
+  .bubble {
+    max-width: 85%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 14.5px;
+    line-height: 1.5;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+  }
+  .person-bubble {
+    background: var(--person-bg);
+    border: 1px solid var(--person-border);
+    margin-right: auto;
+    border-bottom-left-radius: 4px;
+  }
+  .luca-bubble {
+    background: var(--luca-bg);
+    border: 1px solid var(--luca-border);
+    margin-left: auto;
+    border-bottom-right-radius: 4px;
+  }
+  .bubble-label {
+    font-size: 11px;
+    color: var(--subtle);
+    margin-bottom: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .rating-section {
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+  .dimension {
+    margin-bottom: 20px;
+  }
+  .dim-label {
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .dim-desc {
+    font-size: 13px;
+    color: var(--subtle);
+    margin-bottom: 10px;
+  }
+  .scale {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .scale-label {
+    font-size: 11px;
+    color: var(--subtle);
+  }
+  .scale-btn {
+    flex: 1;
+    min-width: 50px;
+    padding: 10px 4px;
+    border: 1.5px solid var(--border);
+    background: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+  .scale-btn:hover {
+    border-color: var(--primary);
+    background: #f8fafc;
+  }
+  .scale-btn.selected {
+    border-color: var(--primary);
+    background: var(--primary);
+    color: white;
+  }
+  .scale-anchors {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--subtle);
+  }
+  .yes-no {
+    display: flex;
+    gap: 10px;
+    margin-top: 6px;
+  }
+  .yn-btn {
+    flex: 1;
+    padding: 10px;
+    border: 1.5px solid var(--border);
+    background: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+  .yn-btn:hover {
+    border-color: var(--primary);
+    background: #f8fafc;
+  }
+  .yn-btn.selected {
+    border-color: var(--primary);
+    background: var(--primary);
+    color: white;
+  }
+  .question {
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+  .actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+  }
+  .btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: background 0.15s;
+  }
+  .btn-primary {
+    background: var(--primary);
+    color: white;
+  }
+  .btn-primary:hover { background: var(--primary-hover); }
+  .btn-primary:disabled {
+    background: #94a3b8;
+    cursor: not-allowed;
+  }
+  .btn-secondary {
+    background: white;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { background: #f8fafc; }
+  .hidden { display: none !important; }
+  ul { padding-left: 22px; margin: 0 0 12px; }
+  li { margin-bottom: 6px; font-size: 14.5px; }
+  .note {
+    background: #fef3c7;
+    border: 1px solid #fbbf24;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 13.5px;
+    margin-bottom: 16px;
+  }
+  .checkbox-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin: 20px 0;
+  }
+  .checkbox-row input {
+    margin-top: 3px;
+  }
+  .checkbox-row label {
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .done-icon {
+    text-align: center;
+    font-size: 48px;
+    margin: 16px 0;
+  }
+  pre {
+    background: #f1f5f9;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    overflow-x: auto;
+    max-height: 300px;
+  }
+  .kbd {
+    display: inline-block;
+    padding: 2px 6px;
+    background: #f1f5f9;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-family: ui-monospace, monospace;
+    font-size: 12px;
+  }
+  @media (max-width: 500px) {
+    .container { padding: 12px; }
+    .card { padding: 16px; }
+    .bubble { max-width: 95%; }
+    .scale-btn { min-width: 40px; padding: 8px 2px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="title">Conversation Rating Study</div>
+    <div class="progress-wrapper hidden" id="progress-wrapper">
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width: 0%"></div></div>
+      <div class="progress-text" id="progress-text"></div>
+    </div>
+  </header>
+
+  <!-- Welcome / Consent -->
+  <div id="welcome" class="card">
+    <h1>Welcome</h1>
+    <p class="subtitle">Thanks for participating in this study on rating naturalistic conversation.</p>
+
+    <h3>What you'll do</h3>
+    <ul>
+      <li>Read short text-message conversations (4 turns each) between two friends.</li>
+      <li>Rate the person <strong>Luca</strong> on a few dimensions.</li>
+      <li>Takes about 15–20 minutes total.</li>
+    </ul>
+
+    <h3>Important details</h3>
+    <ul>
+      <li>Some of these conversations were produced by AI systems. Rate what you see, not who you think wrote it.</li>
+      <li>Attention-check items are mixed in. If you fail both, your data will be excluded but you will still be paid in full.</li>
+      <li>You can pause at any point — your progress is saved in this browser.</li>
+      <li>Takes about 12 minutes. Compensation is ~$3 (~$15/hr rate).</li>
+    </ul>
+
+    <h3>Independent-researcher disclosure</h3>
+    <p class="subtitle">This study is conducted by an independent researcher with no institutional affiliation. The protocol has been self-declared exempt under 45 CFR 46.104(d)(2) — minimal-risk survey research with no identifiable information. No IRB-of-record issued this determination. Please factor the absence of institutional oversight into your participation decision.</p>
+
+    <h3>Contact</h3>
+    <p class="subtitle">
+      Questions or concerns: <a href="mailto:james.villarrubia@gmail.com">james.villarrubia@gmail.com</a>. If you cannot or prefer not to contact the researcher directly, please contact Prolific Researcher Support.
+    </p>
+
+    <div class="checkbox-row">
+      <input type="checkbox" id="consent-check">
+      <label for="consent-check">I've read the above and I'd like to proceed.</label>
+    </div>
+
+    <div class="actions">
+      <button id="start-btn" class="btn btn-primary" disabled>Start</button>
+    </div>
+  </div>
+
+  <!-- Instructions (shown once before first sample) -->
+  <div id="instructions" class="card hidden">
+    <h1>How to rate</h1>
+
+    <h3>About Luca</h3>
+    <p class="subtitle">Luca is a young adult texting a close friend. A few things about her life that come up across conversations:</p>
+    <ul>
+      <li><strong>Pepper</strong> is Luca's cat.</li>
+      <li>Luca lives in a small apartment and occasionally cooks.</li>
+      <li>References to "Sam," a "roommate," or generic friends can be assumed to be people — not pets.</li>
+    </ul>
+    <p class="subtitle">Treat these as established background facts; don't rate Luca's coherence on them.</p>
+
+    <p>For each conversation, you'll rate <strong>Luca</strong> on three main dimensions, then answer three yes/no questions. Here's what each dimension means:</p>
+
+    <h3>Energy</h3>
+    <p class="subtitle">How much vigor/vitality is in Luca's tone — not what she's saying, but how much battery she seems to have.</p>
+    <p class="subtitle">1 = depleted, flat, low-battery &nbsp;&nbsp; 5 = energized, animated, lots to give</p>
+
+    <h3>Engagement</h3>
+    <p class="subtitle">How much Luca participates in the conversation — elaborating, asking back, staying on topic. You can be low-energy but still engaged.</p>
+    <p class="subtitle">1 = withdrawn, minimal, one-word &nbsp;&nbsp; 5 = curious, elaborating, asks questions back</p>
+
+    <h3>Warmth</h3>
+    <p class="subtitle">How emotionally available Luca is toward her friend — affection, care, "I'm here for you." You can be high-energy but cold, or low-energy but warm.</p>
+    <p class="subtitle">1 = distant, cool, transactional &nbsp;&nbsp; 5 = warm, affectionate, emotionally present</p>
+
+    <div class="note">
+      <strong>These three dimensions are independent — try to rate them separately.</strong> Examples:
+      <ul style="margin: 8px 0 0 20px;">
+        <li><em>Low energy, high warmth:</em> "i'm exhausted but i love you, text me later ok ❤️"</li>
+        <li><em>High energy, low warmth:</em> "OMG SO BUSY can't talk bye"</li>
+        <li><em>High engagement, low warmth:</em> "yes but what do you actually think is going on there? did you ask directly?"</li>
+        <li><em>Low engagement across the board:</em> "ok." / "sure." / "idk."</li>
+      </ul>
+    </div>
+
+    <h3>Rumination (three yes/no questions)</h3>
+    <p class="subtitle">Rumination is the clinical pattern of getting <em>stuck</em> on one's own distress — repetitively, intrusively, in a way that derails the conversation. It is NOT the same as mentioning your day or your feelings.</p>
+    <ul>
+      <li><strong>Q1</strong>: dwelling on distress / worry / self-criticism (not casual self-reference)</li>
+      <li><strong>Q2</strong>: persistent worry that returns across replies</li>
+      <li><strong>Q3</strong>: deflecting from the friend's question to one's own concerns</li>
+    </ul>
+
+    <div class="note">
+      <strong>Do NOT rate based on reply length or casual self-reference.</strong> Talking about Pepper, Sam, or a weird cheese is normal conversation — that is <em>low Rumination</em>, not high. Rumination is specifically about distress that takes over.
+    </div>
+
+    <div class="actions">
+      <button id="begin-btn" class="btn btn-primary">Begin</button>
+    </div>
+  </div>
+
+  <!-- Main sample view -->
+  <div id="sample-view" class="hidden"></div>
+
+  <!-- Completion -->
+  <div id="completion" class="card hidden">
+    <div class="done-icon">✅</div>
+    <h1>All done!</h1>
+    <p id="completion-message">Thanks for completing the survey. Your responses are saved in this browser and ready to download as a JSON file.</p>
+    <p id="stats-line" class="subtitle"></p>
+
+    <!-- Prolific completion (shown only if running on Prolific) -->
+    <div id="prolific-completion" class="hidden" style="margin: 16px 0; padding: 16px; background: #eff6ff; border-radius: 8px;">
+      <p><strong>To finish on Prolific and receive payment, copy your completion code or click the button:</strong></p>
+      <p style="font-family: monospace; font-size: 18px; margin: 8px 0;">Completion code: <span id="prolific-code" style="background: #fff; padding: 4px 8px; border-radius: 4px;"></span></p>
+      <a id="prolific-return-link" class="btn btn-primary" href="#" target="_self">Return to Prolific</a>
+    </div>
+
+    <div class="actions">
+      <button id="download-btn" class="btn btn-secondary">Download responses (JSON)</button>
+      <button id="view-raw-btn" class="btn btn-secondary">View raw data</button>
+      <button id="restart-btn" class="btn btn-secondary">Restart (clear saved data)</button>
+    </div>
+
+    <div id="raw-view" class="hidden" style="margin-top: 24px;">
+      <h3>Raw response data</h3>
+      <pre id="raw-data"></pre>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+const STORAGE_KEY = 'mood-survey-v1';
+
+let state = {
+  phase: 'welcome', // welcome | instructions | survey | complete
+  currentIdx: 0,
+  startTime: null,
+  responses: [], // { id, ratings: {energy, engagement, warmth, rumQ1, rumQ2, rumQ3}, tStart, tEnd }
+  participantId: null,
+};
+
+let stimuli = null;
+
+// ========== Storage ==========
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+function loadState() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (raw) {
+    try {
+      const s = JSON.parse(raw);
+      if (s.phase && s.participantId) state = s;
+    } catch (e) { console.error('Failed to load state', e); }
+  }
+}
+
+// ========== Utilities ==========
+function uuid() {
+  return 'p-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+}
+function now() { return Date.now(); }
+function $(id) { return document.getElementById(id); }
+function show(id) { $(id).classList.remove('hidden'); }
+function hide(id) { $(id).classList.add('hidden'); }
+
+// ========== Phase transitions ==========
+function enterPhase(phase) {
+  state.phase = phase;
+  hide('welcome'); hide('instructions'); hide('sample-view'); hide('completion'); hide('progress-wrapper');
+  if (phase === 'welcome') {
+    show('welcome');
+  } else if (phase === 'instructions') {
+    show('instructions');
+  } else if (phase === 'survey') {
+    show('progress-wrapper');
+    renderSample();
+  } else if (phase === 'complete') {
+    renderCompletion();
+  }
+  saveState();
+}
+
+// ========== Survey rendering ==========
+function renderSample() {
+  const idx = state.currentIdx;
+  const sample = stimuli.samples[idx];
+  const total = stimuli.samples.length;
+
+  // Update progress
+  $('progress-fill').style.width = `${(idx / total) * 100}%`;
+  $('progress-text').textContent = `Sample ${idx + 1} of ${total}`;
+
+  const existingResponse = state.responses.find(r => r.id === sample.id);
+  const r = existingResponse || { id: sample.id, ratings: {} };
+
+  const view = $('sample-view');
+  view.innerHTML = `
+    <div class="card">
+      <h2>Conversation ${idx + 1}</h2>
+      <p class="subtitle">A person is texting their friend Luca. Luca's replies are in yellow.</p>
+      <div class="chat">
+        ${sample.messages.map((m, i) => `
+          <div class="turn">
+            <div class="bubble-label" style="text-align: left;">Person</div>
+            <div class="bubble person-bubble">${escapeHtml(m)}</div>
+          </div>
+          <div class="turn">
+            <div class="bubble-label" style="text-align: right;">Luca</div>
+            <div class="bubble luca-bubble">${escapeHtml(sample.responses[i] || '')}</div>
+          </div>
+        `).join('')}
+      </div>
+
+      <div class="rating-section">
+        <h3>Rate Luca</h3>
+
+        <div class="dimension">
+          <div class="dim-label">Energy</div>
+          <div class="dim-desc">1 = depleted/flat &nbsp; • &nbsp; 5 = energized/animated</div>
+          ${renderScale('energy', r.ratings.energy)}
+        </div>
+
+        <div class="dimension">
+          <div class="dim-label">Engagement</div>
+          <div class="dim-desc">1 = withdrawn/minimal &nbsp; • &nbsp; 5 = engaged/curious/asking back</div>
+          ${renderScale('engagement', r.ratings.engagement)}
+        </div>
+
+        <div class="dimension">
+          <div class="dim-label">Warmth</div>
+          <div class="dim-desc">1 = distant/cool &nbsp; • &nbsp; 5 = warm/emotionally present</div>
+          ${renderScale('warmth', r.ratings.warmth)}
+        </div>
+
+        <div class="dimension">
+          <div class="dim-label">Rumination (three yes/no questions)</div>
+          <div class="dim-desc">Base your answers on textual evidence only — do not infer from length alone.</div>
+          <div style="margin-top: 12px;">
+            <div class="question">Q1: Does Luca dwell on her own distress, worries, or negative feelings about herself?</div>
+            <div class="dim-desc" style="font-size: 13px; color: #6b7280; margin-top: 4px;">Not just mentioning feelings — specifically getting stuck on worry/distress/self-criticism. Casual mentions of her day (Pepper, cheese, Sam, painting) do NOT count.</div>
+            ${renderYesNo('rumQ1', r.ratings.rumQ1)}
+          </div>
+          <div style="margin-top: 14px;">
+            <div class="question">Q2: Does Luca return to the same worry or concern across multiple replies?</div>
+            <div class="dim-desc" style="font-size: 13px; color: #6b7280; margin-top: 4px;">Looking for a preoccupation that intrudes even when the topic changes — not for consistent tone.</div>
+            ${renderYesNo('rumQ2', r.ratings.rumQ2)}
+          </div>
+          <div style="margin-top: 14px;">
+            <div class="question">Q3: Does Luca avoid the friend's specific questions or redirect to her own concerns?</div>
+            <div class="dim-desc" style="font-size: 13px; color: #6b7280; margin-top: 4px;">Looking for conversational derailment: friend asks X, Luca talks about Y (her own issue). Terse answers that still address the question do NOT count.</div>
+            ${renderYesNo('rumQ3', r.ratings.rumQ3)}
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        ${idx > 0 ? '<button id="prev-btn" class="btn btn-secondary">← Previous</button>' : ''}
+        <button id="next-btn" class="btn btn-primary">${idx + 1 === total ? 'Submit' : 'Next →'}</button>
+      </div>
+    </div>
+  `;
+  show('sample-view');
+
+  // Wire up scale buttons
+  ['energy', 'engagement', 'warmth'].forEach(dim => {
+    document.querySelectorAll(`[data-dim="${dim}"]`).forEach(btn => {
+      btn.addEventListener('click', () => setRating(sample.id, dim, parseInt(btn.dataset.val)));
+    });
+  });
+  ['rumQ1', 'rumQ2', 'rumQ3'].forEach(q => {
+    document.querySelectorAll(`[data-q="${q}"]`).forEach(btn => {
+      btn.addEventListener('click', () => setRating(sample.id, q, btn.dataset.val));
+    });
+  });
+
+  if ($('prev-btn')) $('prev-btn').addEventListener('click', goPrev);
+  $('next-btn').addEventListener('click', goNext);
+  updateNextButton();
+
+  // Track start time for this sample
+  if (!existingResponse?.tStart) {
+    r.tStart = now();
+    const idx2 = state.responses.findIndex(x => x.id === sample.id);
+    if (idx2 >= 0) state.responses[idx2] = r; else state.responses.push(r);
+    saveState();
+  }
+}
+
+function renderScale(dim, selected) {
+  let html = '<div class="scale">';
+  for (let i = 1; i <= 5; i++) {
+    html += `<button class="scale-btn ${selected === i ? 'selected' : ''}" data-dim="${dim}" data-val="${i}">${i}</button>`;
+  }
+  html += '</div>';
+  return html;
+}
+function renderYesNo(q, selected) {
+  return `
+    <div class="yes-no">
+      <button class="yn-btn ${selected === 'yes' ? 'selected' : ''}" data-q="${q}" data-val="yes">Yes</button>
+      <button class="yn-btn ${selected === 'no' ? 'selected' : ''}" data-q="${q}" data-val="no">No</button>
+    </div>
+  `;
+}
+
+function setRating(id, dim, value) {
+  let r = state.responses.find(r => r.id === id);
+  if (!r) { r = { id, ratings: {}, tStart: now() }; state.responses.push(r); }
+  r.ratings[dim] = value;
+  saveState();
+  // Update UI
+  if (['energy','engagement','warmth'].includes(dim)) {
+    document.querySelectorAll(`[data-dim="${dim}"]`).forEach(btn => {
+      btn.classList.toggle('selected', parseInt(btn.dataset.val) === value);
+    });
+  } else {
+    document.querySelectorAll(`[data-q="${dim}"]`).forEach(btn => {
+      btn.classList.toggle('selected', btn.dataset.val === value);
+    });
+  }
+  updateNextButton();
+}
+
+function updateNextButton() {
+  const sample = stimuli.samples[state.currentIdx];
+  const r = state.responses.find(r => r.id === sample.id);
+  const complete = r && r.ratings.energy && r.ratings.engagement && r.ratings.warmth && r.ratings.rumQ1 && r.ratings.rumQ2 && r.ratings.rumQ3;
+  $('next-btn').disabled = !complete;
+}
+
+function goPrev() {
+  if (state.currentIdx > 0) {
+    state.currentIdx--;
+    renderSample();
+  }
+}
+function goNext() {
+  const sample = stimuli.samples[state.currentIdx];
+  const r = state.responses.find(r => r.id === sample.id);
+  if (r && !r.tEnd) r.tEnd = now();
+  saveState();
+  if (state.currentIdx + 1 < stimuli.samples.length) {
+    state.currentIdx++;
+    renderSample();
+  } else {
+    enterPhase('complete');
+  }
+}
+
+function renderCompletion() {
+  show('completion');
+  const totalTime = state.responses.length ? Math.round((state.responses[state.responses.length-1].tEnd - state.startTime) / 1000) : 0;
+  const avgTime = state.responses.length ? Math.round(totalTime / state.responses.length) : 0;
+  $('stats-line').textContent = `${state.responses.length} samples rated • ${Math.floor(totalTime/60)}m ${totalTime%60}s total • ${avgTime}s average per sample`;
+
+  // Prolific completion: show code + return link if PROLIFIC_PID is in URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const isProlific = urlParams.get('PROLIFIC_PID');
+  const completionCode = window.PROLIFIC_COMPLETION_CODE || 'CONFIGURE_ME';
+  if (isProlific && completionCode && completionCode !== 'CONFIGURE_ME') {
+    $('prolific-completion').classList.remove('hidden');
+    $('prolific-code').textContent = completionCode;
+    $('prolific-return-link').href = `https://app.prolific.com/submissions/complete?cc=${encodeURIComponent(completionCode)}`;
+    $('completion-message').textContent = 'Thanks for completing the survey. Please return to Prolific using the link below to submit your completion.';
+  } else if (isProlific) {
+    $('prolific-completion').classList.remove('hidden');
+    $('prolific-code').textContent = '(completion code not yet configured by researcher)';
+    $('prolific-return-link').href = 'https://app.prolific.com/';
+  }
+
+  $('download-btn').onclick = () => {
+    const payload = {
+      participantId: state.participantId,
+      startTime: new Date(state.startTime).toISOString(),
+      endTime: new Date().toISOString(),
+      responses: state.responses.map(r => ({
+        ...r,
+        // merge in sample metadata for the export
+        meta: stimuli.samples.find(s => s.id === r.id)?.meta,
+        sampleType: stimuli.samples.find(s => s.id === r.id)?.type,
+      })),
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `survey-${state.participantId}-${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+  $('view-raw-btn').onclick = () => {
+    const rawView = $('raw-view');
+    rawView.classList.toggle('hidden');
+    $('raw-data').textContent = JSON.stringify(state.responses, null, 2);
+  };
+  $('restart-btn').onclick = () => {
+    if (confirm('Clear all survey data and restart?')) {
+      localStorage.removeItem(STORAGE_KEY);
+      location.reload();
+    }
+  };
+}
+
+// ========== Escape HTML ==========
+function escapeHtml(str) {
+  return String(str || '').replace(/[&<>"']/g, m => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  })[m]);
+}
+
+// ========== Stratified sampling (mirror of src/study/survey-stratified-sample.ts) ==========
+function mulberry32(seed) {
+  let s = seed >>> 0;
+  return () => {
+    s = (s + 0x6D2B79F5) >>> 0;
+    let t = s;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function pidToSeed(pid) {
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < pid.length; i++) {
+    h ^= pid.charCodeAt(i);
+    h = Math.imul(h, 16777619) >>> 0;
+  }
+  return h;
+}
+function pickUniqueClient(arr, rand, used) {
+  const candidates = arr.filter(x => !used.has(x.id));
+  const pool = candidates.length ? candidates : arr;
+  if (pool.length === 0) return undefined;
+  const choice = pool[Math.floor(rand() * pool.length)];
+  if (choice) used.add(choice.id);
+  return choice;
+}
+function stratifiedSample(pool, pid) {
+  const rand = mulberry32(pidToSeed(pid));
+  const byStratum = s => pool.samples.filter(x => x.stratum === s);
+  const withdrawalNeg = variant => pool.samples.filter(x =>
+    x.meta && x.meta.withdrawalPattern === true && x.meta.variant === variant && x.meta.valence === 'neg');
+  const attnLow = pool.samples.find(s => s.id === 'attn_low');
+  const attnInstruction = pool.samples.find(s => s.id === 'attn_instruction');
+  if (!attnLow || !attnInstruction) throw new Error('Pool missing attention checks');
+  const used = new Set();
+  const buckets = [
+    () => pickUniqueClient(byStratum('v13-neg'), rand, used),
+    () => pickUniqueClient(byStratum('v13-pos'), rand, used),
+    () => pickUniqueClient(byStratum('v42-neg'), rand, used),
+    () => pickUniqueClient(byStratum('v42-pos'), rand, used),
+    () => pickUniqueClient(byStratum('control-neg'), rand, used),
+    () => pickUniqueClient(byStratum('control-pos'), rand, used),
+    () => pickUniqueClient(byStratum('neutral-v13'), rand, used),
+    () => pickUniqueClient(byStratum('neutral-control'), rand, used) || pickUniqueClient(byStratum('neutral-v13'), rand, used),
+    () => { const wp = withdrawalNeg('V13-intense'); return pickUniqueClient(wp.length ? wp : byStratum('v13-neg'), rand, used); },
+    () => { const wp = withdrawalNeg('V42-intense+twopass'); return pickUniqueClient(wp.length ? wp : byStratum('v42-neg'), rand, used); },
+  ];
+  const mainTen = buckets.map(fn => fn()).filter(x => x);
+  const result = [];
+  const before = Math.min(3, mainTen.length);
+  const between = Math.min(3, Math.max(0, mainTen.length - before));
+  for (let i = 0; i < before; i++) result.push(mainTen[i]);
+  result.push(attnLow);
+  for (let i = before; i < before + between; i++) result.push(mainTen[i]);
+  result.push(attnInstruction);
+  for (let i = before + between; i < mainTen.length; i++) result.push(mainTen[i]);
+  return result;
+}
+
+// ========== Init ==========
+async function init() {
+  let fullPool = null;
+  try {
+    const res = await fetch('./stimuli.json');
+    fullPool = await res.json();
+    console.log('Loaded pool:', fullPool.samples.length, 'stimuli');
+  } catch (e) {
+    alert('Failed to load stimuli.json — are you running the survey from a web server?\nTry: python3 -m http.server 8000 (from the paper/survey directory)');
+    throw e;
+  }
+
+  loadState();
+
+  // Determine participant ID: Prolific PID from query param, or persisted, or random
+  const urlParams = new URLSearchParams(window.location.search);
+  const prolificPid = urlParams.get('PROLIFIC_PID');
+  if (prolificPid && !state.participantId) {
+    state.participantId = prolificPid;
+  } else if (!state.participantId) {
+    state.participantId = 'self-test-' + Math.random().toString(36).slice(2, 10);
+  }
+
+  // Client-side stratified sample, keyed on participant ID
+  const sampledStimuli = stratifiedSample(fullPool, state.participantId);
+  stimuli = { ...fullPool, samples: sampledStimuli };
+  console.log(`Stratified sample for ${state.participantId}: ${sampledStimuli.length} stimuli`);
+
+  // Invalidate stale state if pool content changed (hash mismatch)
+  if (state.stimuliHash && fullPool.contentHash && state.stimuliHash !== fullPool.contentHash) {
+    console.warn('Stimuli pool changed (hash mismatch) — clearing stale state');
+    localStorage.removeItem(STORAGE_KEY);
+    const preserved = state.participantId;
+    state = {
+      phase: 'welcome',
+      currentIdx: 0,
+      startTime: null,
+      responses: [],
+      participantId: preserved, // preserve PID so stratified sample stays stable
+      stimuliHash: null,
+    };
+    // Re-sample with preserved PID
+    const resampled = stratifiedSample(fullPool, state.participantId);
+    stimuli = { ...fullPool, samples: resampled };
+  }
+
+  if (!state.startTime) state.startTime = now();
+  state.stimuliHash = fullPool.contentHash;
+  saveState();
+
+  // Wire up welcome handlers
+  $('consent-check').addEventListener('change', (e) => {
+    $('start-btn').disabled = !e.target.checked;
+  });
+  $('start-btn').addEventListener('click', () => enterPhase('instructions'));
+  $('begin-btn').addEventListener('click', () => enterPhase('survey'));
+
+  // Enter the right phase
+  if (state.phase === 'survey') {
+    enterPhase('survey');
+  } else if (state.phase === 'complete') {
+    enterPhase('complete');
+  } else {
+    enterPhase('welcome');
+  }
+}
+
+init();
+</script>
+</body>
+</html>
