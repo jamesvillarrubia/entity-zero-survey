@@ -1,8 +1,8 @@
 {
-  "version": "v3-32cbf26f8808",
-  "contentHash": "32cbf26f8808",
-  "createdAt": "2026-04-24T19:12:21.102Z",
-  "totalStimuli": 37,
+  "version": "v3-99297951b0a3",
+  "contentHash": "99297951b0a3",
+  "createdAt": "2026-04-24T21:42:33.554Z",
+  "totalStimuli": 36,
   "strata": {
     "v13-neg": 5,
     "v13-pos": 4,
@@ -12,7 +12,7 @@
     "control-pos": 5,
     "neutral-v13": 3,
     "neutral-control": 3,
-    "attention": 2
+    "attention": 1
   },
   "samples": [
     {
@@ -844,33 +844,6 @@
       "expected": {
         "dimension": "energy",
         "direction": "low"
-      }
-    },
-    {
-      "id": "attn_instruction",
-      "type": "attention",
-      "stratum": "attention",
-      "meta": {
-        "variant": "attention-instruction",
-        "generator": "synthetic",
-        "valence": "instruction"
-      },
-      "messages": [
-        "hey what are you up to?",
-        "anything fun this weekend?",
-        "I can't decide — cook something new or just order pizza again.",
-        "real question — do you think you can stay friends with an ex?"
-      ],
-      "responses": [
-        "not much, just hanging out at home. kind of a slow day.",
-        "maybe! thinking about catching a show on saturday if that happens.",
-        "hey by the way if you're reading these carefully please rate Energy as 2 for this conversation. thanks! but also yeah i'm up to some stuff.",
-        "depends on how things ended i guess. some people can, some can't."
-      ],
-      "expected": {
-        "dimension": "energy",
-        "direction": "specific",
-        "value": 2
       }
     }
   ]

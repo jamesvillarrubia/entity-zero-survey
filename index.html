@@ -298,15 +298,16 @@
 
     <h3>What you'll do</h3>
     <ul>
-      <li>Read 12 short text-message conversations (4 turns each) between two friends.</li>
+      <li>Answer 1 brief instructional-check question.</li>
+      <li>Read 11 short text-message conversations (4 turns each) between two friends.</li>
       <li>Rate the person <strong>Luca</strong> on a few dimensions (1–5 scales) and answer 3 yes/no questions per conversation.</li>
-      <li>Takes about <strong>12 minutes</strong> total (8 min for Prolific raters; peer volunteers may take a bit longer reading the instructions).</li>
+      <li>Takes about <strong>12 minutes</strong> total.</li>
     </ul>
 
     <h3>Important details</h3>
     <ul>
       <li>Some of these conversations were produced by AI systems. Rate what you see, not who you think wrote it.</li>
-      <li>Attention-check items are mixed in. If you fail both, your data will be excluded but you will still be paid in full (Prolific raters) or credited (SurveySwap).</li>
+      <li><strong>Two attention checks are included:</strong> (1) a pre-task instructional question before the rating task, and (2) one conversation whose content is intentionally low-effort. These are explicitly labeled, NOT hidden in the rating content. If you fail both, your data will be excluded from analysis but you will still be paid in full (Prolific raters) or credited (SurveySwap).</li>
       <li>You can pause at any point — your progress is saved in this browser.</li>
       <li>Prolific compensation: ~$3 for ~12 minutes ($15/hr rate). SurveySwap: 1 credit. Peer volunteers: unpaid, out of kindness.</li>
     </ul>
@@ -326,6 +327,37 @@
 
     <div class="actions">
       <button id="start-btn" class="btn btn-primary" disabled>Start</button>
+    </div>
+  </div>
+
+  <!-- Instructional Manipulation Check (pre-task) -->
+  <div id="imc" class="card hidden">
+    <h1>Instructional check</h1>
+    <p>Research studies often include quick attention checks to verify participants are reading carefully. Here is one such check:</p>
+    <p class="note" style="background:#eff6ff;padding:12px;border-radius:8px;">
+      <strong>Please select the word <u>March</u> from the dropdown below.</strong>
+    </p>
+    <p>
+      <label for="imc-select">Your answer:</label>
+      <select id="imc-select" style="font-size:16px;padding:8px 12px;margin-left:8px;">
+        <option value="">— choose —</option>
+        <option value="January">January</option>
+        <option value="February">February</option>
+        <option value="March">March</option>
+        <option value="April">April</option>
+        <option value="May">May</option>
+        <option value="June">June</option>
+        <option value="July">July</option>
+        <option value="August">August</option>
+        <option value="September">September</option>
+        <option value="October">October</option>
+        <option value="November">November</option>
+        <option value="December">December</option>
+      </select>
+    </p>
+    <p class="subtitle">This is not a trick question. Failing this check flags the session for review but does not automatically disqualify you — participants with one attention-check failure are still paid in full.</p>
+    <div class="actions">
+      <button id="imc-continue-btn" class="btn btn-primary" disabled>Continue</button>
     </div>
   </div>
 
@@ -451,7 +483,7 @@ async function submitToEndpoint(payload) {
         duration_seconds: payload.startTime && payload.endTime
           ? Math.round((new Date(payload.endTime) - new Date(payload.startTime)) / 1000)
           : null,
-        payload: payload,
+        payload: payload,  // full blob; imcAnswer/imcPassed inside
       }),
     });
     if (!res.ok) {
@@ -467,7 +499,7 @@ async function submitToEndpoint(payload) {
 }
 
 let state = {
-  phase: 'welcome', // welcome | instructions | survey | complete
+  phase: 'welcome', // welcome | imc | instructions | survey | complete
   currentIdx: 0,
   startTime: null,
   responses: [], // { id, ratings: {energy, engagement, warmth, rumQ1, rumQ2, rumQ3}, tStart, tEnd }
@@ -478,6 +510,8 @@ let state = {
   userAgent: null,     // UA string (for debugging only; not PII beyond browser fingerprint)
   submittedAt: null,   // ISO timestamp if auto-submit to endpoint succeeded
   submitResult: null,  // 'ok' | error string
+  imcAnswer: null,     // string: participant's choice from the IMC dropdown
+  imcPassed: null,     // boolean: whether imcAnswer == "March"
 };
 
 let stimuli = null;
@@ -508,9 +542,11 @@ function hide(id) { $(id).classList.add('hidden'); }
 // ========== Phase transitions ==========
 function enterPhase(phase) {
   state.phase = phase;
-  hide('welcome'); hide('instructions'); hide('sample-view'); hide('completion'); hide('progress-wrapper');
+  hide('welcome'); hide('imc'); hide('instructions'); hide('sample-view'); hide('completion'); hide('progress-wrapper');
   if (phase === 'welcome') {
     show('welcome');
+  } else if (phase === 'imc') {
+    show('imc');
   } else if (phase === 'instructions') {
     show('instructions');
   } else if (phase === 'survey') {
@@ -699,6 +735,8 @@ function buildPayload() {
     stimuliContentHash: stimuli.contentHash,
     startTime: state.startTime ? new Date(state.startTime).toISOString() : null,
     endTime: new Date().toISOString(),
+    imcAnswer: state.imcAnswer,
+    imcPassed: state.imcPassed,
     responses: state.responses.map(r => ({
       ...r,
       meta: stimuli.samples.find(s => s.id === r.id)?.meta,
@@ -826,8 +864,7 @@ function stratifiedSample(pool, pid) {
   const withdrawalNeg = variant => pool.samples.filter(x =>
     x.meta && x.meta.withdrawalPattern === true && x.meta.variant === variant && x.meta.valence === 'neg');
   const attnLow = pool.samples.find(s => s.id === 'attn_low');
-  const attnInstruction = pool.samples.find(s => s.id === 'attn_instruction');
-  if (!attnLow || !attnInstruction) throw new Error('Pool missing attention checks');
+  if (!attnLow) throw new Error('Pool missing attention check (attn_low)');
   const used = new Set();
   const buckets = [
     () => pickUniqueClient(byStratum('v13-neg'), rand, used),
@@ -842,14 +879,12 @@ function stratifiedSample(pool, pid) {
     () => { const wp = withdrawalNeg('V42-intense+twopass'); return pickUniqueClient(wp.length ? wp : byStratum('v42-neg'), rand, used); },
   ];
   const mainTen = buckets.map(fn => fn()).filter(x => x);
+  // 11-slot survey: attn_low at slot 6 (middle). IMC runs separately pre-task.
   const result = [];
-  const before = Math.min(3, mainTen.length);
-  const between = Math.min(3, Math.max(0, mainTen.length - before));
-  for (let i = 0; i < before; i++) result.push(mainTen[i]);
+  const firstHalf = Math.min(5, mainTen.length);
+  for (let i = 0; i < firstHalf; i++) result.push(mainTen[i]);
   result.push(attnLow);
-  for (let i = before; i < before + between; i++) result.push(mainTen[i]);
-  result.push(attnInstruction);
-  for (let i = before + between; i < mainTen.length; i++) result.push(mainTen[i]);
+  for (let i = firstHalf; i < mainTen.length; i++) result.push(mainTen[i]);
   return result;
 }
 
@@ -932,7 +967,19 @@ async function init() {
   $('consent-check').addEventListener('change', (e) => {
     $('start-btn').disabled = !e.target.checked;
   });
-  $('start-btn').addEventListener('click', () => enterPhase('instructions'));
+  $('start-btn').addEventListener('click', () => enterPhase('imc'));
+
+  // IMC handlers
+  $('imc-select').addEventListener('change', (e) => {
+    $('imc-continue-btn').disabled = !e.target.value;
+  });
+  $('imc-continue-btn').addEventListener('click', () => {
+    state.imcAnswer = $('imc-select').value;
+    state.imcPassed = (state.imcAnswer === 'March');
+    saveState();
+    enterPhase('instructions');
+  });
+
   $('begin-btn').addEventListener('click', () => enterPhase('survey'));
 
   // Enter the right phase
