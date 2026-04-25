@@ -453,6 +453,10 @@
 <script>
 'use strict';
 
+// --- Researcher config ---
+window.SURVEYSWAP_COMPLETION_CODE = '34WS-R12Y-79IT';
+// ------------------------
+
 const STORAGE_KEY = 'mood-survey-v1';
 
 // Neon Data API endpoint for submitting responses.
@@ -793,7 +797,7 @@ async function renderCompletion() {
     const swapCode = window.SURVEYSWAP_COMPLETION_CODE || 'CONFIGURE_ME';
     $('prolific-completion').classList.remove('hidden');
     $('prolific-code').textContent = swapCode !== 'CONFIGURE_ME' ? swapCode : '(completion code not yet configured)';
-    $('prolific-return-link').href = 'https://surveyswap.io/';
+    $('prolific-return-link').href = `https://surveyswap.io/sr/${swapCode}`;
     $('prolific-return-link').textContent = 'Return to SurveySwap';
     $('completion-message').textContent = 'Thanks for completing the survey. Please return to SurveySwap and enter the completion code to claim your credit.';
   } else if (state.source === 'direct') {
