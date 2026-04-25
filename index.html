@@ -798,7 +798,8 @@ async function renderCompletion() {
     $('prolific-completion').classList.remove('hidden');
     $('prolific-code').textContent = swapCode !== 'CONFIGURE_ME' ? swapCode : '(completion code not yet configured)';
     $('prolific-return-link').href = `https://surveyswap.io/sr/${swapCode}`;
-    $('prolific-return-link').textContent = 'Return to SurveySwap';
+    $('prolific-return-link').textContent = 'Collect on SurveySwap';
+    $('prolific-return-link').style.cssText = 'display:block;width:fit-content;margin:20px auto 0;padding:12px 28px;';
     $('completion-message').textContent = 'Thanks for completing the survey. Please return to SurveySwap and enter the completion code to claim your credit.';
   } else if (state.source === 'direct') {
     // Volunteer / peer flow: friendly thanks. Data already auto-submitted
