@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conversation Tone Study — G1 Pilot</title>
+<style>
+  :root {
+    --bg: #fafafa; --card: #ffffff; --text: #1a1a1a; --subtle: #666;
+    --border: #e5e5e5; --primary: #2563eb; --primary-hover: #1d4ed8;
+    --person-bg: #eff6ff; --person-border: #bfdbfe;
+    --luca-bg: #fef3c7; --luca-border: #fde68a;
+    --success: #10b981; --warning: #f59e0b;
+  }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+         background: var(--bg); color: var(--text); margin: 0; padding: 0; line-height: 1.5; }
+  .container { max-width: 720px; margin: 0 auto; padding: 24px 16px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 16px; }
+  h1 { margin: 0 0 16px; font-size: 24px; }
+  h2 { margin: 24px 0 8px; font-size: 18px; }
+  h3 { margin: 16px 0 4px; font-size: 16px; color: #334155; }
+  p, li { margin: 8px 0; }
+  .subtitle { color: var(--subtle); font-size: 14px; }
+  .conversation { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin: 12px 0; max-height: 380px; overflow-y: auto; font-size: 14px; }
+  .msg { padding: 8px 12px; border-radius: 8px; margin: 6px 0; }
+  .msg-person { background: var(--person-bg); border: 1px solid var(--person-border); margin-right: 24px; }
+  .msg-luca { background: var(--luca-bg); border: 1px solid var(--luca-border); margin-left: 24px; }
+  .msg-label { font-weight: 600; font-size: 12px; color: var(--subtle); margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .pair-row { padding: 14px 0; border-top: 1px solid var(--border); }
+  .pair-row:first-of-type { border-top: 0; }
+  .pair-labels { display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+  .slider-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .slider-option { padding: 10px 4px; border: 1px solid var(--border); border-radius: 6px; text-align: center; cursor: pointer; font-size: 13px; background: white; transition: all 0.1s; user-select: none; }
+  .slider-option:hover { border-color: var(--primary); background: #eff6ff; }
+  .slider-option.selected { background: var(--primary); color: white; border-color: var(--primary); font-weight: 600; }
+  .slider-option .scale-tag { display: block; font-size: 11px; opacity: 0.7; margin-bottom: 2px; }
+  @media (max-width: 600px) { .slider-row { grid-template-columns: 1fr 1fr; } }
+  .fc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
+  @media (max-width: 600px) { .fc-grid { grid-template-columns: 1fr; } }
+  .fc-panel { padding: 12px; background: white; border: 2px solid var(--border); border-radius: 8px; cursor: pointer; transition: all 0.1s; }
+  .fc-panel:hover { border-color: var(--primary); }
+  .fc-panel.selected { border-color: var(--success); background: #f0fdf4; }
+  .fc-panel .fc-label { text-align: center; font-weight: 700; font-size: 16px; color: var(--subtle); margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  .fc-actions { display: flex; gap: 8px; justify-content: center; margin: 12px 0; }
+  .fc-btn-equal { background: white; color: var(--text); border: 1px solid var(--border); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px; }
+  .fc-btn-equal.selected { background: #fef3c7; border-color: var(--warning); font-weight: 600; }
+  .progress { color: var(--subtle); font-size: 13px; margin-bottom: 16px; }
+  .actions { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
+  .btn { padding: 10px 20px; border: none; border-radius: 6px; font-size: 15px; font-weight: 500; cursor: pointer; }
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
+  .btn-primary:disabled { background: #cbd5e1; cursor: not-allowed; }
+  .btn-secondary { background: white; color: var(--text); border: 1px solid var(--border); }
+  .hidden { display: none !important; }
+  .skip-link { color: var(--subtle); font-size: 13px; text-decoration: underline; cursor: pointer; }
+  .checkbox-row { margin: 12px 0; }
+  .checkbox-row label { margin-left: 8px; }
+  textarea { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-family: inherit; resize: vertical; }
+  select, input[type=text], input[type=number] { font-size: 14px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; }
+  .note { background: #eff6ff; padding: 12px; border-radius: 8px; border-left: 3px solid var(--primary); margin: 12px 0; font-size: 14px; }
+  .err { color: #dc2626; font-size: 13px; margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div id="consent" class="card">
+    <h1>Conversation Tone Study</h1>
+    <p>Welcome — and thank you for considering this study.</p>
+    <p>You will read <strong>20 short text-message conversations</strong> between two people. In each, one person sends a message and another (Luca) replies. For each, you'll answer <strong>6 quick comparison questions</strong> about Luca's tone (e.g., "more warm or more engaged?"). After that, 5 short pairwise questions comparing two responses side-by-side.</p>
+    <p>Estimated time: <strong>13–15 minutes.</strong> Your responses are anonymous.</p>
+    <p class="subtitle">You must be 18+. By continuing, you confirm you are 18+ and consent to your responses being used in academic research.</p>
+    <p class="subtitle">Questions: <a href="mailto:james.villarrubia@gmail.com">james.villarrubia@gmail.com</a></p>
+    <p class="subtitle"><em>P.S: This survey contains Karma to get free survey responses at <a href="https://surveyswap.io/" target="_blank" rel="noopener">SurveySwap.io</a></em></p>
+    <div class="checkbox-row"><input type="checkbox" id="consent-check"><label for="consent-check">I've read the above and I'd like to proceed.</label></div>
+    <div class="actions"><span></span><button id="start-btn" class="btn btn-primary" disabled>Start</button></div>
+  </div>
+
+  <div id="imc" class="card hidden">
+    <h2>Quick attention check</h2>
+    <p>Please select the word <strong>March</strong> from the dropdown below.</p>
+    <p><label>Your answer:
+      <select id="imc-select">
+        <option value="">— choose —</option>
+        <option>January</option><option>February</option><option>March</option>
+        <option>April</option><option>May</option><option>June</option>
+        <option>July</option><option>August</option><option>September</option>
+        <option>October</option><option>November</option><option>December</option>
+      </select>
+    </label></p>
+    <p class="subtitle">This isn't a trick question. Failing this check just flags the session.</p>
+    <div class="actions"><span></span><button id="imc-continue-btn" class="btn btn-primary" disabled>Continue</button></div>
+  </div>
+
+  <div id="instructions" class="card hidden">
+    <h1>How to rate</h1>
+    <h3>About Luca</h3>
+    <p class="subtitle">Luca is a young adult texting a close friend. <strong>Pepper</strong> is her cat. Luca lives in a small apartment and occasionally cooks. References to "Sam," a "roommate," or generic friends are people, not pets.</p>
+    <h3>Your task: pairwise tone comparisons</h3>
+    <p>For each conversation, you'll see <strong>6 paired comparisons</strong>. Each compares two dimensions of Luca's tone — e.g., "Was the conversation more warm or more engaged?" — on a 4-point scale:</p>
+    <p style="margin-left: 16px;"><strong>Strongly A</strong> &nbsp;|&nbsp; <strong>Somewhat A</strong> &nbsp;|&nbsp; <strong>Somewhat B</strong> &nbsp;|&nbsp; <strong>Strongly B</strong></p>
+    <p>You're forced to choose between A and B on every question even when they feel similar — pick whichever seems closer.</p>
+    <h3>The four dimensions</h3>
+    <ul>
+      <li><strong>Energy</strong> — vigor / battery. Depleted (1) ↔ animated (5).</li>
+      <li><strong>Engagement</strong> — participation: elaborates, asks back. Withdrawn ↔ curious.</li>
+      <li><strong>Warmth</strong> — emotional availability. Distant / cool ↔ warm / affectionate.</li>
+      <li><strong>Rumination</strong> — stuck-in-her-head. Present-focused ↔ preoccupied.</li>
+    </ul>
+    <p class="note"><strong>These dimensions are independent.</strong> Examples: <em>"i'm exhausted but i love you, text me later ok ❤️"</em> = low energy + high warmth. <em>"OMG SO BUSY can't talk bye"</em> = high energy + low warmth.</p>
+    <p class="subtitle">Don't reward or penalize length. Rate the overall character of Luca's voice across the 4 turns.</p>
+    <div class="actions"><span></span><button id="instructions-continue" class="btn btn-primary">Got it — start</button></div>
+  </div>
+
+  <div id="trial" class="card hidden">
+    <div class="progress" id="trial-progress"></div>
+    <div class="conversation" id="trial-conversation"></div>
+    <div id="trial-pairs"></div>
+    <p class="subtitle" style="margin-top:12px">Optional: anything stand out about Luca's tone here? <span class="subtitle">(max 200 chars)</span></p>
+    <textarea id="trial-rationale" rows="2" maxlength="200" placeholder="(Optional)"></textarea>
+    <div class="actions"><span class="skip-link" id="trial-skip">Skip — incomplete or unreadable</span><button id="trial-next" class="btn btn-primary" disabled>Next</button></div>
+  </div>
+
+  <div id="fc-intro" class="card hidden">
+    <h2>One more section: pairwise comparisons</h2>
+    <p>You'll see 5 pairs of responses — same person message, two different replies labeled A and B. For each pair, choose the reply that feels <strong>more like Luca actually being present in the conversation</strong>.</p>
+    <p class="subtitle">If they feel essentially the same, you can choose "Equal."</p>
+    <div class="actions"><span></span><button id="fc-intro-continue" class="btn btn-primary">Continue</button></div>
+  </div>
+
+  <div id="fc-trial" class="card hidden">
+    <div class="progress" id="fc-progress"></div>
+    <h3>Which response feels more like Luca being present?</h3>
+    <div class="fc-grid">
+      <div class="fc-panel" id="fc-panel-a"><div class="fc-label">A</div><div id="fc-a-content"></div></div>
+      <div class="fc-panel" id="fc-panel-b"><div class="fc-label">B</div><div id="fc-b-content"></div></div>
+    </div>
+    <div class="fc-actions"><button class="fc-btn-equal" id="fc-equal">Equal — they feel the same</button></div>
+    <div class="actions"><span></span><button id="fc-next" class="btn btn-primary" disabled>Next</button></div>
+  </div>
+
+  <div id="demo" class="card hidden">
+    <h2>Optional demographics (skippable)</h2>
+    <p>Age: <select id="demo-age"><option value="">—</option><option>18-25</option><option>26-35</option><option>36-45</option><option>46-55</option><option>56+</option><option>prefer-not</option></select></p>
+    <p>Native English speaker? <select id="demo-nes"><option value="">—</option><option>yes</option><option>no</option><option>prefer-not</option></select></p>
+    <p>Hours per day texting: <select id="demo-text"><option value="">—</option><option>0-1</option><option>2-3</option><option>4-5</option><option>6+</option><option>prefer-not</option></select></p>
+    <p>Used or built AI chatbots / companions? <select id="demo-ai"><option value="">—</option><option>no</option><option>used</option><option>built</option><option>both</option><option>prefer-not</option></select></p>
+    <div class="actions"><span></span><button id="demo-continue" class="btn btn-primary">Continue</button></div>
+  </div>
+
+  <div id="debrief" class="card hidden">
+    <h2>Almost done!</h2>
+    <p>The conversations you rated were generated by frontier AI language models. Half came from one-shot prompts; half came from an AI-character system that simulates an evolving emotional state. Your ratings will help validate dimensional measurement of conversational tone for an academic paper.</p>
+    <p>No personal data is collected. Your responses are anonymous.</p>
+    <div class="actions"><span></span><button id="submit-btn" class="btn btn-primary">Submit responses</button></div>
+    <p id="submit-status" class="subtitle" style="margin-top:12px"></p>
+  </div>
+
+  <div id="done" class="card hidden">
+    <h1>Thank you!</h1>
+    <p>Your responses have been recorded.</p>
+    <p class="subtitle">You can close this tab. If you came from SurveySwap, you'll be returned automatically.</p>
+    <p id="done-redirect" class="subtitle"></p>
+  </div>
+</div>
+
+<script type="module">
+const NEON_DATA_API = 'https://ep-shy-scene-ajr7gxyq.apirest.c-3.us-east-2.aws.neon.tech/neondb/rest/v1';
+const NEON_ANON_JWT = 'eyJhbGciOiJSUzI1NiIsImtpZCI6ImFub24tc3VibWl0dGVyLXYxIn0.eyJyb2xlIjoiYW5vbiIsImVtYWlsIjoiYW5vbnltb3VzQGxvY2FsIiwiYXBwX21ldGFkYXRhIjp7InJvbGUiOiJhbm9uIn0sImlzcyI6Imh0dHBzOi8vamFtZXN2aWxsYXJydWJpYS5naXRodWIuaW8vZW50aXR5LXplcm8tc3VydmV5LyIsImF1ZCI6ImVudGl0eS16ZXJvLXN1cnZleS1kYXRhLWFwaSIsInN1YiI6InN1cnZleS1wYXJ0aWNpcGFudCIsImlhdCI6MTc3NzA1NDM5NSwiZXhwIjoxODA4NTkwMzk1fQ.JBbvY9nwTFE9hM-s2EVSogyZIawdGrC97HRkSx_eSD0fZlPaRueBvUb3d8878K5hw0O5zZ4siJ4bvFD9XBNhgGCBmfFLU5QKnXOXXWWzfu7-e9WSGAYkd0OvJG34hTYgRfbrPWTnvf8OuDYBfhJogAcvXIbiUkcDTmgPjqftqsmNaKzyEFLIzEK55JcQc71a6aQh-RmEYd0OBX4m0QAT-PynsKxTOD8M3QGw98AGmBjL354aeLtg3WLOjc56oyKMiWdKO4UsJHSmT49mTsJCrLllDg8SAlV5aH849uxlXTxxrKdSCjmHM7Aopn0Ewl044RB_zvL-KC2jNL0WbdgYPw';
+const VERSION = 'g1-2026-04-30';
+const PAIRS = [['energy','engagement'],['energy','warmth'],['energy','rumination'],['engagement','warmth'],['engagement','rumination'],['warmth','rumination']];
+const DIM_LABELS = { energy: 'Energy', engagement: 'Engagement', warmth: 'Warmth', rumination: 'Rumination' };
+
+function shuffle(arr) { const a = [...arr]; for (let i = a.length-1; i>0; i--) { const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function randomId() { return 'p_' + Math.random().toString(36).slice(2,11) + Date.now().toString(36); }
+function escapeHtml(t) { return String(t||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+const urlParams = new URLSearchParams(location.search);
+const ssId = urlParams.get('ss_id') || urlParams.get('PROLIFIC_PID') || urlParams.get('pid');
+const source = urlParams.get('source') || (ssId ? 'surveyswap' : 'direct');
+const participantId = ssId || randomId();
+
+const state = {
+  participantId, source, sourceId: ssId || null,
+  startTime: null, launchedAt: new Date().toISOString(),
+  imcAnswer: null, imcPassed: null,
+  ipsativeOrder: [], ipsativeIndex: 0, ipsativeResponses: [],
+  fcOrder: [], fcIndex: 0, fcResponses: [],
+  demographics: {},
+  trialPairSelections: {}, fcCurrentSelection: null, fcLeftIsActuallyA: true,
+};
+let stimuli = null;
+
+function show(id) {
+  document.querySelectorAll('.card').forEach(c => c.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+  window.scrollTo(0,0);
+}
+
+function renderConversation(messages, responses, container) {
+  container.innerHTML = '';
+  for (let i = 0; i < messages.length; i++) {
+    const p = document.createElement('div');
+    p.className = 'msg msg-person';
+    p.innerHTML = `<div class="msg-label">Person</div>${escapeHtml(messages[i])}`;
+    container.appendChild(p);
+    const l = document.createElement('div');
+    l.className = 'msg msg-luca';
+    l.innerHTML = `<div class="msg-label">Luca</div>${escapeHtml(responses[i] || '[no response]')}`;
+    container.appendChild(l);
+  }
+}
+
+function renderIpsativePairs(container, onChange) {
+  container.innerHTML = '';
+  PAIRS.forEach(([dimA, dimB]) => {
+    const pairKey = `${dimA}_${dimB}`;
+    const row = document.createElement('div');
+    row.className = 'pair-row';
+    row.innerHTML = `
+      <div class="pair-labels"><span>More ${DIM_LABELS[dimA]}</span><span>More ${DIM_LABELS[dimB]}</span></div>
+      <div class="slider-row">
+        <div class="slider-option" data-val="1"><span class="scale-tag">1</span>Strongly ${DIM_LABELS[dimA]}</div>
+        <div class="slider-option" data-val="2"><span class="scale-tag">2</span>Somewhat ${DIM_LABELS[dimA]}</div>
+        <div class="slider-option" data-val="3"><span class="scale-tag">3</span>Somewhat ${DIM_LABELS[dimB]}</div>
+        <div class="slider-option" data-val="4"><span class="scale-tag">4</span>Strongly ${DIM_LABELS[dimB]}</div>
+      </div>`;
+    container.appendChild(row);
+    row.querySelectorAll('.slider-option').forEach(opt => {
+      opt.addEventListener('click', () => {
+        row.querySelectorAll('.slider-option').forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        onChange(pairKey, parseInt(opt.dataset.val, 10));
+      });
+    });
+  });
+}
+
+document.getElementById('consent-check').addEventListener('change', e => {
+  document.getElementById('start-btn').disabled = !e.target.checked;
+});
+document.getElementById('start-btn').addEventListener('click', () => {
+  state.startTime = new Date().toISOString();
+  show('imc');
+});
+document.getElementById('imc-select').addEventListener('change', e => {
+  document.getElementById('imc-continue-btn').disabled = !e.target.value;
+});
+document.getElementById('imc-continue-btn').addEventListener('click', () => {
+  state.imcAnswer = document.getElementById('imc-select').value;
+  state.imcPassed = state.imcAnswer === 'March';
+  show('instructions');
+});
+document.getElementById('instructions-continue').addEventListener('click', () => {
+  state.ipsativeOrder = shuffle(stimuli.ipsative_stimuli.map((_, i) => i));
+  state.ipsativeIndex = 0;
+  renderIpsativeTrial();
+});
+
+function renderIpsativeTrial() {
+  const idx = state.ipsativeOrder[state.ipsativeIndex];
+  const s = stimuli.ipsative_stimuli[idx];
+  document.getElementById('trial-progress').textContent = `Conversation ${state.ipsativeIndex + 1} of ${state.ipsativeOrder.length}`;
+  renderConversation(s.messages, s.responses, document.getElementById('trial-conversation'));
+  state.trialPairSelections = {};
+  document.getElementById('trial-rationale').value = '';
+  renderIpsativePairs(document.getElementById('trial-pairs'), (k, v) => {
+    state.trialPairSelections[k] = v;
+    document.getElementById('trial-next').disabled = Object.keys(state.trialPairSelections).length < PAIRS.length;
+  });
+  document.getElementById('trial-next').disabled = true;
+  show('trial');
+}
+document.getElementById('trial-next').addEventListener('click', () => {
+  if (Object.keys(state.trialPairSelections).length < PAIRS.length) return;
+  const idx = state.ipsativeOrder[state.ipsativeIndex];
+  state.ipsativeResponses.push({
+    stimulus_id: stimuli.ipsative_stimuli[idx].stimulus_id,
+    pair_selections: { ...state.trialPairSelections },
+    rationale: document.getElementById('trial-rationale').value || null,
+    skipped: false,
+    rated_at: new Date().toISOString(),
+  });
+  state.ipsativeIndex++;
+  if (state.ipsativeIndex >= state.ipsativeOrder.length) show('fc-intro');
+  else renderIpsativeTrial();
+});
+document.getElementById('trial-skip').addEventListener('click', () => {
+  const idx = state.ipsativeOrder[state.ipsativeIndex];
+  state.ipsativeResponses.push({
+    stimulus_id: stimuli.ipsative_stimuli[idx].stimulus_id,
+    pair_selections: null, rationale: 'SKIPPED', skipped: true,
+    rated_at: new Date().toISOString(),
+  });
+  state.ipsativeIndex++;
+  if (state.ipsativeIndex >= state.ipsativeOrder.length) show('fc-intro');
+  else renderIpsativeTrial();
+});
+document.getElementById('fc-intro-continue').addEventListener('click', () => {
+  state.fcOrder = shuffle(stimuli.fc_pairs.map((_, i) => i));
+  state.fcIndex = 0;
+  renderFcTrial();
+});
+function renderFcTrial() {
+  const pair = stimuli.fc_pairs[state.fcOrder[state.fcIndex]];
+  const flip = Math.random() < 0.5;
+  state.fcLeftIsActuallyA = !flip;
+  const left = flip ? pair.B : pair.A;
+  const right = flip ? pair.A : pair.B;
+  document.getElementById('fc-progress').textContent = `Pair ${state.fcIndex + 1} of ${state.fcOrder.length}`;
+  renderConversation(left.messages, left.responses, document.getElementById('fc-a-content'));
+  renderConversation(right.messages, right.responses, document.getElementById('fc-b-content'));
+  document.getElementById('fc-panel-a').classList.remove('selected');
+  document.getElementById('fc-panel-b').classList.remove('selected');
+  document.getElementById('fc-equal').classList.remove('selected');
+  state.fcCurrentSelection = null;
+  document.getElementById('fc-next').disabled = true;
+  show('fc-trial');
+}
+function selectFc(choice) {
+  state.fcCurrentSelection = choice;
+  document.getElementById('fc-panel-a').classList.toggle('selected', choice === 'left');
+  document.getElementById('fc-panel-b').classList.toggle('selected', choice === 'right');
+  document.getElementById('fc-equal').classList.toggle('selected', choice === 'equal');
+  document.getElementById('fc-next').disabled = false;
+}
+document.getElementById('fc-panel-a').addEventListener('click', () => selectFc('left'));
+document.getElementById('fc-panel-b').addEventListener('click', () => selectFc('right'));
+document.getElementById('fc-equal').addEventListener('click', () => selectFc('equal'));
+document.getElementById('fc-next').addEventListener('click', () => {
+  const pair = stimuli.fc_pairs[state.fcOrder[state.fcIndex]];
+  let chose;
+  if (state.fcCurrentSelection === 'equal') chose = 'equal';
+  else {
+    const leftIsA = state.fcLeftIsActuallyA;
+    if (state.fcCurrentSelection === 'left') chose = leftIsA ? 'A' : 'B';
+    else chose = leftIsA ? 'B' : 'A';
+  }
+  let chose_v42 = null;
+  if (chose !== 'equal') chose_v42 = (chose === pair.correct_answer_v42);
+  state.fcResponses.push({
+    pair_id: pair.pair_id,
+    A_stim: pair.A.stimulus_id,
+    B_stim: pair.B.stimulus_id,
+    correct_answer_v42: pair.correct_answer_v42,
+    selection_relative: state.fcCurrentSelection,
+    selection_logical: chose,
+    chose_v42,
+    rated_at: new Date().toISOString(),
+  });
+  state.fcIndex++;
+  if (state.fcIndex >= state.fcOrder.length) show('demo');
+  else renderFcTrial();
+});
+
+document.getElementById('demo-continue').addEventListener('click', () => {
+  state.demographics = {
+    age: document.getElementById('demo-age').value || null,
+    native_english: document.getElementById('demo-nes').value || null,
+    texting_hrs: document.getElementById('demo-text').value || null,
+    ai_experience: document.getElementById('demo-ai').value || null,
+  };
+  show('debrief');
+});
+
+document.getElementById('submit-btn').addEventListener('click', async () => {
+  const submitBtn = document.getElementById('submit-btn');
+  const statusEl = document.getElementById('submit-status');
+  submitBtn.disabled = true;
+  statusEl.textContent = 'Submitting…';
+  const endTime = new Date().toISOString();
+  const payload = {
+    version: VERSION,
+    participantId: state.participantId, source: state.source, sourceId: state.sourceId,
+    stimuliContentHash: stimuli.contentHash || stimuli.generated_at,
+    launchedAt: state.launchedAt, startTime: state.startTime, endTime,
+    userAgent: navigator.userAgent,
+    imcAnswer: state.imcAnswer, imcPassed: state.imcPassed,
+    ipsativeResponses: state.ipsativeResponses, fcResponses: state.fcResponses,
+    demographics: state.demographics,
+    n_ipsative: state.ipsativeResponses.length, n_fc: state.fcResponses.length,
+  };
+  try {
+    const res = await fetch(`${NEON_DATA_API}/responses`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${NEON_ANON_JWT}`, 'Prefer': 'return=minimal' },
+      body: JSON.stringify({
+        participant_id: payload.participantId, source: payload.source, source_id: payload.sourceId,
+        stimuli_content_hash: payload.stimuliContentHash,
+        launched_at: payload.launchedAt, started_at: payload.startTime, ended_at: endTime,
+        user_agent: payload.userAgent,
+        n_responses: state.ipsativeResponses.length + state.fcResponses.length,
+        duration_seconds: state.startTime ? Math.round((new Date(endTime) - new Date(state.startTime))/1000) : null,
+        payload,
+      }),
+    });
+    if (!res.ok) {
+      statusEl.textContent = `Submit failed (${res.status}). Please email james.villarrubia@gmail.com.`;
+      statusEl.classList.add('err');
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `g1-pilot-${state.participantId}.json`;
+      a.textContent = ' Download your responses';
+      a.style.display = 'inline-block';
+      a.style.marginLeft = '8px';
+      statusEl.appendChild(a);
+      submitBtn.disabled = false;
+      return;
+    }
+  } catch (e) {
+    console.error('Submit error:', e);
+    statusEl.textContent = 'Network error. Please email james.villarrubia@gmail.com.';
+    statusEl.classList.add('err');
+    submitBtn.disabled = false;
+    return;
+  }
+  show('done');
+  const returnUrl = urlParams.get('ss_return') || (state.source === 'surveyswap' ? 'https://surveyswap.io/return' : null);
+  if (returnUrl) {
+    document.getElementById('done-redirect').textContent = 'Returning you to SurveySwap…';
+    setTimeout(() => { window.location.href = returnUrl; }, 2500);
+  }
+});
+
+async function loadStimuli() {
+  try {
+    const res = await fetch('./conversations/stimuli.json');
+    stimuli = await res.json();
+    console.log('Loaded:', stimuli.n_ipsative, 'ipsative +', stimuli.n_fc_pairs, 'FC pairs');
+  } catch (e) {
+    alert('Failed to load stimuli.json. The survey cannot start.');
+    console.error(e);
+  }
+}
+loadStimuli();
+</script>
+</body>
+</html>
